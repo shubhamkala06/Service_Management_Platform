@@ -16,6 +16,7 @@ router.post(
   validate(registerAdminSchema),
   authController.registerAdmin,
 );
+
 router.post("/login", validate(loginSchema), authController.login);
 
 module.exports = router;

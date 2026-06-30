@@ -77,15 +77,12 @@ async function login(credentials) {
 
   const token = generateToken({
     id: user.id,
-
     email: user.email,
-
     role: user.role.name,
   });
 
   return {
     user,
-
     token,
   };
 }
