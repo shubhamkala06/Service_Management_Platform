@@ -1,4 +1,5 @@
 const authService = require("../services/auth.service");
+const sendResponse = require("../utils/response.util");
 
 /**
  * Register System Administrator
@@ -15,11 +16,13 @@ async function registerAdmin(req, res) {
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-
-      message: error.message,
-    });
+    sendResponse(
+      res,
+      201,
+      true,
+      "Administrator registered successfully.",
+      result,
+    );
   }
 }
 /**
@@ -34,10 +37,7 @@ async function login(req, res) {
       data: result,
     });
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: error.message,
-    });
+    sendResponse(res, 200, true, "Login successful.", result);
   }
 }
 
