@@ -8,6 +8,7 @@ const { findRoleByName } = require("../repositories/role.repository");
 const { hashPassword } = require("../utils/password.util");
 
 const { generateToken } = require("../utils/jwt.util");
+const { comparePassword } = require("../utils/password.util");
 
 /**
  * Register System Administrator
@@ -55,7 +56,41 @@ async function registerAdmin(userData) {
     token,
   };
 }
+/**
+ * Login User
+ */
+async function login(credentials) {
+  const user = await findUserByEmail(credentials.email);
+
+  if (!user) {
+    throw new Error("Invalid email or password.");
+  }
+
+  const passwordMatched = await comparePassword(
+    credentials.password,
+    user.password,
+  );
+
+  if (!passwordMatched) {
+    throw new Error("Invalid email or password.");
+  }
+
+  const token = generateToken({
+    id: user.id,
+
+    email: user.email,
+
+    role: user.role.name,
+  });
+
+  return {
+    user,
+
+    token,
+  };
+}
 
 module.exports = {
   registerAdmin,
+  login,
 };
