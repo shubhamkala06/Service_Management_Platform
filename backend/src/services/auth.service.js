@@ -6,9 +6,10 @@ const {
 const { findRoleByName } = require("../repositories/role.repository");
 
 const { hashPassword } = require("../utils/password.util");
-
+const AppError = require("../errors/app-error");
 const { generateToken } = require("../utils/jwt.util");
 const { comparePassword } = require("../utils/password.util");
+const HTTP_STATUS = require("../constants/http-status");
 
 /**
  * Register System Administrator
@@ -17,13 +18,13 @@ async function registerAdmin(userData) {
   const existingUser = await findUserByEmail(userData.email);
 
   if (existingUser) {
-    throw new Error("Email already exists.");
+    throw new AppError("Email already exists", HTTP_STATUS.CONFLICT);
   }
 
   const adminRole = await findRoleByName("Admin");
 
   if (!adminRole) {
-    throw new Error("Admin role not found.");
+    throw new AppError("Admin role not found.", HTTP_STATUS.NOT_FOUND);
   }
 
   const hashedPassword = await hashPassword(userData.password);
@@ -63,7 +64,7 @@ async function login(credentials) {
   const user = await findUserByEmail(credentials.email);
 
   if (!user) {
-    throw new Error("Invalid email or password.");
+    throw new AppError("Invalid email or password.", HTTP_STATUS.UNAUTHORIZED);
   }
 
   const passwordMatched = await comparePassword(
@@ -72,7 +73,7 @@ async function login(credentials) {
   );
 
   if (!passwordMatched) {
-    throw new Error("Invalid email or password.");
+    throw new AppError("Invalid email or password.", HTTP_STATUS.UNAUTHORIZED);
   }
 
   const token = generateToken({
