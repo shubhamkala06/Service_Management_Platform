@@ -1,10 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client-js" 
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -12,10 +7,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  PENDING_USER_RESPONSE
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ASSIGNED
+  UNDER_REPAIR
+  RETIRED
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+enum AssetCondition {
+  NEW
+  GOOD
+  FAIR
+  DAMAGED
+  SCRAPPED
+}
+
+enum LicenseType {
+  PERPETUAL
+  SUBSCRIPTION
+  TRIAL
+}
+
+enum AssetType {
+  HARDWARE
+  SOFTWARE
+  OTHER
+}
+
+//////////////////////////////////////////////////////
+// ROLE
+//////////////////////////////////////////////////////
+
 model Role {
   id          Int      @id @default(autoincrement())
   name        String   @unique
   description String?
+  isActive    Boolean  @default(true)
 
   users       User[]
 
@@ -25,25 +77,399 @@ model Role {
   @@map("roles")
 }
 
+//////////////////////////////////////////////////////
+// USER
+//////////////////////////////////////////////////////
+
 model User {
-  id            Int      @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
+  employeeCode    String   @unique
+  firstName       String
+  lastName        String
+  email           String   @unique
+  password        String
+  phoneNumber     String?
+  department      String
+  dateOfJoining   DateTime
+  isActive        Boolean  @default(true)
+  roleId          Int
 
-  firstName     String
-  lastName      String
+  role            Role @relation(fields: [roleId], references: [id])
 
-  email         String   @unique
+  //////////////////////////////////////////////////
+  // Ticket Relations
+  //////////////////////////////////////////////////
 
-  password      String
+  createdTickets  Ticket[] @relation("CreatedTickets")
+  assignedTickets Ticket[] @relation("AssignedTickets")
+  ticketHistory   TicketStatusHistory[] @relation("StatusChangedBy")
 
-  department    String?
+  //////////////////////////////////////////////////
+  // Comment Relations
+  //////////////////////////////////////////////////
 
+  comments Comment[]
+  uploadedAttachments Attachment[] @relation("UploadedAttachments")
 
-  roleId        Int
+  //////////////////////////////////////////////////
+  // Approval Relations
+  //////////////////////////////////////////////////
 
-  role          Role     @relation(fields: [roleId], references: [id])
+  approvalsGiven Approval[] @relation("Approver")
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  //////////////////////////////////////////////////
+  // Asset Relations
+  //////////////////////////////////////////////////
 
+  assignedAssets AssetAssignment[] @relation("AssignedAssets")
+  assetAssignmentsMade AssetAssignment[] @relation("AssignedBy")
+
+  //////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roleId])
+  @@index([department])
   @@map("users")
+}
+
+//////////////////////////////////////////////////////
+// SUPPORT CATEGORY
+//////////////////////////////////////////////////////
+
+model SupportCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+
+  tickets     Ticket[]
+  slaPolicies SlaPolicy[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("support_categories")
+}
+
+//////////////////////////////////////////////////////
+// SLA POLICY
+//////////////////////////////////////////////////////
+
+model SlaPolicy {
+  id                  Int      @id @default(autoincrement())
+  policyName          String
+  responseTarget      Int
+  resolutionTarget    Int
+  isActive            Boolean @default(true)
+  supportCategoryId   Int
+
+  supportCategory SupportCategory @relation(fields: [supportCategoryId], references: [id])
+
+  tickets Ticket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([supportCategoryId])
+  @@map("sla_policies")
+}
+
+//////////////////////////////////////////////////////
+// TICKET
+//////////////////////////////////////////////////////
+
+model Ticket {
+  id              Int @id @default(autoincrement())
+  ticketNumber    String @unique
+  title           String
+  description     String
+  priority        TicketPriority
+  status          TicketStatus @default(OPEN)
+  createdById     Int
+  assignedToId    Int?
+  categoryId      Int
+  slaPolicyId     Int?
+  deadline        DateTime?
+  resolvedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  ////////////////////////////////////////////////
+  // Relations
+  ////////////////////////////////////////////////
+
+  createdBy User @relation("CreatedTickets", fields: [createdById], references: [id])
+  assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  category SupportCategory @relation(fields: [categoryId], references: [id])
+  slaPolicy SlaPolicy? @relation(fields: [slaPolicyId], references: [id])
+
+  comments Comment[]
+  approval Approval?
+  statusHistory TicketStatusHistory[]
+
+  ////////////////////////////////////////////////
+
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([categoryId])
+  @@index([slaPolicyId])
+  @@map("tickets")
+}
+
+//////////////////////////////////////////////////////
+// COMMENT
+//////////////////////////////////////////////////////
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  content     String
+  createdOn   DateTime @default(now())
+  ticketId    Int
+  userId      Int
+
+  //////////////////////////////////////////////////
+  // Relations
+  //////////////////////////////////////////////////
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  attachments Attachment[]
+
+  //////////////////////////////////////////////////
+
+  @@index([ticketId])
+  @@index([userId])
+  @@map("comments")
+}
+
+//////////////////////////////////////////////////////
+// ATTACHMENT
+//////////////////////////////////////////////////////
+
+model Attachment {
+  id          Int      @id @default(autoincrement())
+  fileName    String
+  fileType    String
+  fileSize    Int
+  uploadedOn  DateTime @default(now())
+  commentId   Int
+  uploadedById Int
+
+  //////////////////////////////////////////////////
+  // Relations
+  //////////////////////////////////////////////////
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation("UploadedAttachments", fields: [uploadedById], references: [id])
+
+  //////////////////////////////////////////////////
+
+  @@index([commentId])
+  @@index([uploadedById])
+  @@map("attachments")
+}
+
+//////////////////////////////////////////////////////
+// APPROVAL
+//////////////////////////////////////////////////////
+
+model Approval {
+  id          Int      @id @default(autoincrement())
+  decision    ApprovalDecision
+  remarks     String?
+  approvedOn  DateTime @default(now())
+  approverId  Int
+  ticketId    Int @unique
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  //////////////////////////////////////////////////
+  // Relations
+  //////////////////////////////////////////////////
+
+  approver User @relation("Approver", fields: [approverId], references: [id])
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  //////////////////////////////////////////////////
+
+  @@index([approverId])
+  @@map("approvals")
+}
+
+//////////////////////////////////////////////////////
+// TICKET STATUS HISTORY
+//////////////////////////////////////////////////////
+
+model TicketStatusHistory {
+  id          Int      @id @default(autoincrement())
+  oldStatus   TicketStatus
+  newStatus   TicketStatus
+  remarks     String?
+  changedOn   DateTime @default(now())
+  ticketId    Int
+  changedById Int
+
+  updatedAt   DateTime @updatedAt
+
+  //////////////////////////////////////////////////
+  // Relations
+  //////////////////////////////////////////////////
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  changedBy User @relation("StatusChangedBy", fields: [changedById], references: [id])
+
+  //////////////////////////////////////////////////
+
+  @@index([ticketId])
+  @@index([changedById])
+  @@map("ticket_status_history")
+}
+
+//////////////////////////////////////////////////////
+// ASSET
+//////////////////////////////////////////////////////
+
+model Asset {
+  id                Int         @id @default(autoincrement())
+  assetTag          String      @unique
+  assetType         AssetType
+  assetStatus       AssetStatus @default(AVAILABLE)
+  purchaseDate      DateTime?
+  warrantyExpiry    DateTime?
+  vendor            String?
+  location          String?
+  isActive          Boolean     @default(true)
+
+  //////////////////////////////////////////////////
+  // Relations
+  //////////////////////////////////////////////////
+
+  hardware          Hardware?
+  software          Software?
+  other             Other?
+  assignments       AssetAssignment[]
+
+  //////////////////////////////////////////////////
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([assetStatus])
+  @@index([assetType])
+  @@map("assets")
+}
+
+//////////////////////////////////////////////////////
+// HARDWARE
+//////////////////////////////////////////////////////
+
+model Hardware {
+  id              Int @id @default(autoincrement())
+  serialNumber    String @unique
+  manufacturer    String
+  model           String
+  condition       AssetCondition
+  assetId         Int @unique
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hardware_assets")
+}
+
+//////////////////////////////////////////////////////
+// SOFTWARE
+//////////////////////////////////////////////////////
+
+model Software {
+  id              Int @id @default(autoincrement())
+  softwareName    String
+  version         String
+  vendor          String
+  licenseKey      String?
+  licenseType     LicenseType
+  expiryDate      DateTime?
+  assetId         Int @unique
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("software_assets")
+}
+
+//////////////////////////////////////////////////////
+// OTHER ASSET
+//////////////////////////////////////////////////////
+
+model Other {
+  id              Int @id @default(autoincrement())
+  itemName        String
+  description     String?
+  assetId         Int @unique
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("other_assets")
+}
+
+//////////////////////////////////////////////////////
+// ASSET ASSIGNMENT
+//////////////////////////////////////////////////////
+
+model AssetAssignment {
+  id              Int @id @default(autoincrement())
+  assignedDate    DateTime @default(now())
+  returnDate      DateTime?
+  remarks         String?
+  assetId         Int
+  userId          Int
+  assignedById    Int
+
+  asset Asset @relation(fields: [assetId], references: [id])
+  user User @relation("AssignedAssets", fields: [userId], references: [id])
+  assignedBy User @relation("AssignedBy", fields: [assignedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assetId])
+  @@index([userId])
+  @@index([assignedById])
+  @@map("asset_assignments")
+}
+
+//////////////////////////////////////////////////////
+// AUDIT LOG
+//////////////////////////////////////////////////////
+
+model AuditLog {
+  id               Int @id @default(autoincrement())
+  actorType        String
+  actorIdentifier  String
+  action           String
+  targetType       String
+  targetIdentifier String
+  details          String?
+  ipAddress        String?
+
+  createdAt        DateTime @default(now())
+
+  @@index([actorIdentifier])
+  @@index([targetIdentifier])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

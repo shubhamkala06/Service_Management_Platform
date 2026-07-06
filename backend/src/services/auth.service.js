@@ -21,39 +21,31 @@ async function registerAdmin(userData) {
     throw new AppError("Email already exists", HTTP_STATUS.CONFLICT);
   }
 
-  const adminRole = await findRoleByName("Admin");
+  // const adminRole = await findRoleByName("Admin");
 
-  if (!adminRole) {
-    throw new AppError("Admin role not found.", HTTP_STATUS.NOT_FOUND);
-  }
+  // if (!adminRole) {
+  //   throw new AppError("Admin role not found.", HTTP_STATUS.NOT_FOUND);
+  // }
 
   const hashedPassword = await hashPassword(userData.password);
 
   const user = await createUser({
     firstName: userData.firstName,
-
     lastName: userData.lastName,
-
     email: userData.email,
-
     password: hashedPassword,
-
     department: userData.department,
-
     roleId: adminRole.id,
   });
 
   const token = generateToken({
     id: user.id,
-
     email: user.email,
-
     role: user.role.name,
   });
 
   return {
     user,
-
     token,
   };
 }
