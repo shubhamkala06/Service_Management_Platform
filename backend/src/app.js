@@ -6,6 +6,7 @@ const errorHandler = require("./middleware/error.middleware");
 
 const healthRoutes = require("./routes/health.routes");
 const authRoutes = require("./routes/auth.routes");
+const ticketRoutes = require("./routes/ticket.routes");
 
 const app = express();
 
@@ -27,9 +28,9 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 // ---------------- Routes ----------------
-
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 app.use(errorHandler);
 

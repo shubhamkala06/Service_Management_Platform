@@ -7,8 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 enum TicketStatus {
   OPEN
   ASSIGNED
@@ -57,49 +55,45 @@ enum AssetType {
   OTHER
 }
 
-
-
 model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean @default(true)
 
-  users       User[]
+  users User[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("roles")
 }
 
-
-
 model User {
-  id              Int      @id @default(autoincrement())
-  employeeCode    String   @unique
-  firstName       String
-  lastName        String
-  email           String   @unique
-  password        String
-  phoneNumber     String?
-  department      String
-  dateOfJoining   DateTime
-  isActive        Boolean  @default(true)
-  roleId          Int
+  id            Int      @id @default(autoincrement())
+  employeeCode  String   @unique
+  firstName     String
+  lastName      String
+  email         String   @unique
+  password      String
+  phoneNumber   String?
+  department    String
+  dateOfJoining DateTime
+  isActive      Boolean  @default(true)
+  roleId        Int
 
-  role            Role @relation(fields: [roleId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
 
-  createdTickets  Ticket[] @relation("CreatedTickets")
-  assignedTickets Ticket[] @relation("AssignedTickets")
+  createdTickets  Ticket[]              @relation("CreatedTickets")
+  assignedTickets Ticket[]              @relation("AssignedTickets")
   ticketHistory   TicketStatusHistory[] @relation("StatusChangedBy")
 
-  comments Comment[]
+  comments            Comment[]
   uploadedAttachments Attachment[] @relation("UploadedAttachments")
 
   approvalsGiven Approval[] @relation("Approver")
 
-  assignedAssets AssetAssignment[] @relation("AssignedAssets")
+  assignedAssets       AssetAssignment[] @relation("AssignedAssets")
   assetAssignmentsMade AssetAssignment[] @relation("AssignedBy")
 
   createdAt DateTime @default(now())
@@ -110,30 +104,28 @@ model User {
   @@map("users")
 }
 
-
 model SupportCategory {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean @default(true)
 
-  tickets     Ticket[]
-  slaPolicies SlaPolicy[]
+  tickets   Ticket[]
+  SlaPolicy SlaPolicy?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("support_categories")
 }
 
-
 model SlaPolicy {
-  id                  Int      @id @default(autoincrement())
-  policyName          String
-  responseTarget      Int
-  resolutionTarget    Int
-  isActive            Boolean @default(true)
-  supportCategoryId   Int
+  id                Int     @id @default(autoincrement())
+  policyName        String
+  responseTarget    Int
+  resolutionTarget  Int
+  isActive          Boolean @default(true)
+  supportCategoryId Int     @unique
 
   supportCategory SupportCategory @relation(fields: [supportCategoryId], references: [id])
 
@@ -146,31 +138,30 @@ model SlaPolicy {
   @@map("sla_policies")
 }
 
-
 model Ticket {
-  id              Int @id @default(autoincrement())
-  ticketNumber    String @unique
-  title           String
-  description     String
-  priority        TicketPriority
-  status          TicketStatus @default(OPEN)
-  createdById     Int
-  assignedToId    Int?
-  categoryId      Int
-  slaPolicyId     Int?
-  deadline        DateTime?
-  resolvedAt      DateTime?
+  id           Int            @id @default(autoincrement())
+  ticketNumber String         @unique
+  title        String
+  description  String
+  priority     TicketPriority
+  status       TicketStatus   @default(OPEN)
+  createdById  Int
+  assignedToId Int?
+  categoryId   Int
+  slaPolicyId  Int?
+  deadline     DateTime?
+  resolvedAt   DateTime?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdBy User @relation("CreatedTickets", fields: [createdById], references: [id])
-  assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
-  category SupportCategory @relation(fields: [categoryId], references: [id])
-  slaPolicy SlaPolicy? @relation(fields: [slaPolicyId], references: [id])
+  createdBy  User            @relation("CreatedTickets", fields: [createdById], references: [id])
+  assignedTo User?           @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  category   SupportCategory @relation(fields: [categoryId], references: [id])
+  slaPolicy  SlaPolicy?      @relation(fields: [slaPolicyId], references: [id])
 
-  comments Comment[]
-  approval Approval?
+  comments      Comment[]
+  approval      Approval?
   statusHistory TicketStatusHistory[]
 
   @@index([status])
@@ -183,14 +174,14 @@ model Ticket {
 }
 
 model Comment {
-  id          Int      @id @default(autoincrement())
-  content     String
-  createdOn   DateTime @default(now())
-  ticketId    Int
-  userId      Int
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdOn DateTime @default(now())
+  ticketId  Int
+  userId    Int
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   attachments Attachment[]
 
@@ -200,16 +191,16 @@ model Comment {
 }
 
 model Attachment {
-  id          Int      @id @default(autoincrement())
-  fileName    String
-  fileType    String
-  fileSize    Int
-  uploadedOn  DateTime @default(now())
-  commentId   Int
+  id           Int      @id @default(autoincrement())
+  fileName     String
+  fileType     String
+  fileSize     Int
+  uploadedOn   DateTime @default(now())
+  commentId    Int
   uploadedById Int
 
-  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  uploadedBy User @relation("UploadedAttachments", fields: [uploadedById], references: [id])
+  comment    Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation("UploadedAttachments", fields: [uploadedById], references: [id])
 
   @@index([commentId])
   @@index([uploadedById])
@@ -217,36 +208,36 @@ model Attachment {
 }
 
 model Approval {
-  id          Int      @id @default(autoincrement())
-  decision    ApprovalDecision
-  remarks     String?
-  approvedOn  DateTime @default(now())
-  approverId  Int
-  ticketId    Int @unique
+  id         Int              @id @default(autoincrement())
+  decision   ApprovalDecision
+  remarks    String?
+  approvedOn DateTime         @default(now())
+  approverId Int
+  ticketId   Int              @unique
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  approver User @relation("Approver", fields: [approverId], references: [id])
-  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  approver User   @relation("Approver", fields: [approverId], references: [id])
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([approverId])
   @@map("approvals")
 }
 
 model TicketStatusHistory {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   oldStatus   TicketStatus
   newStatus   TicketStatus
   remarks     String?
-  changedOn   DateTime @default(now())
+  changedOn   DateTime     @default(now())
   ticketId    Int
   changedById Int
 
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
-  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  changedBy User @relation("StatusChangedBy", fields: [changedById], references: [id])
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  changedBy User   @relation("StatusChangedBy", fields: [changedById], references: [id])
 
   @@index([ticketId])
   @@index([changedById])
@@ -254,23 +245,23 @@ model TicketStatusHistory {
 }
 
 model Asset {
-  id                Int         @id @default(autoincrement())
-  assetTag          String      @unique
-  assetType         AssetType
-  assetStatus       AssetStatus @default(AVAILABLE)
-  purchaseDate      DateTime?
-  warrantyExpiry    DateTime?
-  vendor            String?
-  location          String?
-  isActive          Boolean     @default(true)
+  id             Int         @id @default(autoincrement())
+  assetTag       String      @unique
+  assetType      AssetType
+  assetStatus    AssetStatus @default(AVAILABLE)
+  purchaseDate   DateTime?
+  warrantyExpiry DateTime?
+  vendor         String?
+  location       String?
+  isActive       Boolean     @default(true)
 
-  hardware          Hardware?
-  software          Software?
-  other             Other?
-  assignments       AssetAssignment[]
+  hardware    Hardware?
+  software    Software?
+  other       Other?
+  assignments AssetAssignment[]
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([assetStatus])
   @@index([assetType])
@@ -278,12 +269,12 @@ model Asset {
 }
 
 model Hardware {
-  id              Int @id @default(autoincrement())
-  serialNumber    String @unique
-  manufacturer    String
-  model           String
-  condition       AssetCondition
-  assetId         Int @unique
+  id           Int            @id @default(autoincrement())
+  serialNumber String         @unique
+  manufacturer String
+  model        String
+  condition    AssetCondition
+  assetId      Int            @unique
 
   asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
@@ -294,14 +285,14 @@ model Hardware {
 }
 
 model Software {
-  id              Int @id @default(autoincrement())
-  softwareName    String
-  version         String
-  vendor          String
-  licenseKey      String?
-  licenseType     LicenseType
-  expiryDate      DateTime?
-  assetId         Int @unique
+  id           Int         @id @default(autoincrement())
+  softwareName String
+  version      String
+  vendor       String
+  licenseKey   String?
+  licenseType  LicenseType
+  expiryDate   DateTime?
+  assetId      Int         @unique
 
   asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
@@ -312,10 +303,10 @@ model Software {
 }
 
 model Other {
-  id              Int @id @default(autoincrement())
-  itemName        String
-  description     String?
-  assetId         Int @unique
+  id          Int     @id @default(autoincrement())
+  itemName    String
+  description String?
+  assetId     Int     @unique
 
   asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
@@ -326,17 +317,17 @@ model Other {
 }
 
 model AssetAssignment {
-  id              Int @id @default(autoincrement())
-  assignedDate    DateTime @default(now())
-  returnDate      DateTime?
-  remarks         String?
-  assetId         Int
-  userId          Int
-  assignedById    Int
+  id           Int       @id @default(autoincrement())
+  assignedDate DateTime  @default(now())
+  returnDate   DateTime?
+  remarks      String?
+  assetId      Int
+  userId       Int
+  assignedById Int
 
-  asset Asset @relation(fields: [assetId], references: [id])
-  user User @relation("AssignedAssets", fields: [userId], references: [id])
-  assignedBy User @relation("AssignedBy", fields: [assignedById], references: [id])
+  asset      Asset @relation(fields: [assetId], references: [id])
+  user       User  @relation("AssignedAssets", fields: [userId], references: [id])
+  assignedBy User  @relation("AssignedBy", fields: [assignedById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -348,7 +339,7 @@ model AssetAssignment {
 }
 
 model AuditLog {
-  id               Int @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   actorType        String
   actorIdentifier  String
   action           String
@@ -357,7 +348,7 @@ model AuditLog {
   details          String?
   ipAddress        String?
 
-  createdAt        DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([actorIdentifier])
   @@index([targetIdentifier])
