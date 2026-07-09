@@ -15,7 +15,7 @@ async function createTicket(payload, userId) {
     throw new Error("Support category not found.");
   }
 
-  const slaPolicy = category.slaPolicies[0] || null;
+  const slaPolicy = category.slaPolicies || null;
 
   const lastTicket = await repository.getLastTicket();
   const ticketNumber = generateTicketNumber(lastTicket?.id || 0);

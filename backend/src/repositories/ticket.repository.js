@@ -7,11 +7,7 @@ async function findCategoryById(categoryId) {
       isActive: true,
     },
     include: {
-      slaPolicies: {
-        where: {
-          isActive: true,
-        },
-      },
+      slaPolicy: true,
     },
   });
 }
