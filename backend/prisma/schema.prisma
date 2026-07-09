@@ -7,9 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//////////////////////////////////////////////////////
-// ENUMS
-//////////////////////////////////////////////////////
+
 
 enum TicketStatus {
   OPEN
@@ -59,9 +57,7 @@ enum AssetType {
   OTHER
 }
 
-//////////////////////////////////////////////////////
-// ROLE
-//////////////////////////////////////////////////////
+
 
 model Role {
   id          Int      @id @default(autoincrement())
@@ -77,9 +73,7 @@ model Role {
   @@map("roles")
 }
 
-//////////////////////////////////////////////////////
-// USER
-//////////////////////////////////////////////////////
+
 
 model User {
   id              Int      @id @default(autoincrement())
@@ -96,35 +90,17 @@ model User {
 
   role            Role @relation(fields: [roleId], references: [id])
 
-  //////////////////////////////////////////////////
-  // Ticket Relations
-  //////////////////////////////////////////////////
-
   createdTickets  Ticket[] @relation("CreatedTickets")
   assignedTickets Ticket[] @relation("AssignedTickets")
   ticketHistory   TicketStatusHistory[] @relation("StatusChangedBy")
 
-  //////////////////////////////////////////////////
-  // Comment Relations
-  //////////////////////////////////////////////////
-
   comments Comment[]
   uploadedAttachments Attachment[] @relation("UploadedAttachments")
 
-  //////////////////////////////////////////////////
-  // Approval Relations
-  //////////////////////////////////////////////////
-
   approvalsGiven Approval[] @relation("Approver")
-
-  //////////////////////////////////////////////////
-  // Asset Relations
-  //////////////////////////////////////////////////
 
   assignedAssets AssetAssignment[] @relation("AssignedAssets")
   assetAssignmentsMade AssetAssignment[] @relation("AssignedBy")
-
-  //////////////////////////////////////////////////
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -134,9 +110,6 @@ model User {
   @@map("users")
 }
 
-//////////////////////////////////////////////////////
-// SUPPORT CATEGORY
-//////////////////////////////////////////////////////
 
 model SupportCategory {
   id          Int      @id @default(autoincrement())
@@ -153,9 +126,6 @@ model SupportCategory {
   @@map("support_categories")
 }
 
-//////////////////////////////////////////////////////
-// SLA POLICY
-//////////////////////////////////////////////////////
 
 model SlaPolicy {
   id                  Int      @id @default(autoincrement())
@@ -176,9 +146,6 @@ model SlaPolicy {
   @@map("sla_policies")
 }
 
-//////////////////////////////////////////////////////
-// TICKET
-//////////////////////////////////////////////////////
 
 model Ticket {
   id              Int @id @default(autoincrement())
@@ -197,10 +164,6 @@ model Ticket {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  ////////////////////////////////////////////////
-  // Relations
-  ////////////////////////////////////////////////
-
   createdBy User @relation("CreatedTickets", fields: [createdById], references: [id])
   assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
   category SupportCategory @relation(fields: [categoryId], references: [id])
@@ -209,8 +172,6 @@ model Ticket {
   comments Comment[]
   approval Approval?
   statusHistory TicketStatusHistory[]
-
-  ////////////////////////////////////////////////
 
   @@index([status])
   @@index([priority])
@@ -221,10 +182,6 @@ model Ticket {
   @@map("tickets")
 }
 
-//////////////////////////////////////////////////////
-// COMMENT
-//////////////////////////////////////////////////////
-
 model Comment {
   id          Int      @id @default(autoincrement())
   content     String
@@ -232,25 +189,15 @@ model Comment {
   ticketId    Int
   userId      Int
 
-  //////////////////////////////////////////////////
-  // Relations
-  //////////////////////////////////////////////////
-
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
 
   attachments Attachment[]
 
-  //////////////////////////////////////////////////
-
   @@index([ticketId])
   @@index([userId])
   @@map("comments")
 }
-
-//////////////////////////////////////////////////////
-// ATTACHMENT
-//////////////////////////////////////////////////////
 
 model Attachment {
   id          Int      @id @default(autoincrement())
@@ -261,23 +208,13 @@ model Attachment {
   commentId   Int
   uploadedById Int
 
-  //////////////////////////////////////////////////
-  // Relations
-  //////////////////////////////////////////////////
-
   comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   uploadedBy User @relation("UploadedAttachments", fields: [uploadedById], references: [id])
-
-  //////////////////////////////////////////////////
 
   @@index([commentId])
   @@index([uploadedById])
   @@map("attachments")
 }
-
-//////////////////////////////////////////////////////
-// APPROVAL
-//////////////////////////////////////////////////////
 
 model Approval {
   id          Int      @id @default(autoincrement())
@@ -290,22 +227,12 @@ model Approval {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  //////////////////////////////////////////////////
-  // Relations
-  //////////////////////////////////////////////////
-
   approver User @relation("Approver", fields: [approverId], references: [id])
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  //////////////////////////////////////////////////
 
   @@index([approverId])
   @@map("approvals")
 }
-
-//////////////////////////////////////////////////////
-// TICKET STATUS HISTORY
-//////////////////////////////////////////////////////
 
 model TicketStatusHistory {
   id          Int      @id @default(autoincrement())
@@ -318,23 +245,13 @@ model TicketStatusHistory {
 
   updatedAt   DateTime @updatedAt
 
-  //////////////////////////////////////////////////
-  // Relations
-  //////////////////////////////////////////////////
-
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   changedBy User @relation("StatusChangedBy", fields: [changedById], references: [id])
-
-  //////////////////////////////////////////////////
 
   @@index([ticketId])
   @@index([changedById])
   @@map("ticket_status_history")
 }
-
-//////////////////////////////////////////////////////
-// ASSET
-//////////////////////////////////////////////////////
 
 model Asset {
   id                Int         @id @default(autoincrement())
@@ -347,16 +264,10 @@ model Asset {
   location          String?
   isActive          Boolean     @default(true)
 
-  //////////////////////////////////////////////////
-  // Relations
-  //////////////////////////////////////////////////
-
   hardware          Hardware?
   software          Software?
   other             Other?
   assignments       AssetAssignment[]
-
-  //////////////////////////////////////////////////
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -365,10 +276,6 @@ model Asset {
   @@index([assetType])
   @@map("assets")
 }
-
-//////////////////////////////////////////////////////
-// HARDWARE
-//////////////////////////////////////////////////////
 
 model Hardware {
   id              Int @id @default(autoincrement())
@@ -385,10 +292,6 @@ model Hardware {
 
   @@map("hardware_assets")
 }
-
-//////////////////////////////////////////////////////
-// SOFTWARE
-//////////////////////////////////////////////////////
 
 model Software {
   id              Int @id @default(autoincrement())
@@ -408,10 +311,6 @@ model Software {
   @@map("software_assets")
 }
 
-//////////////////////////////////////////////////////
-// OTHER ASSET
-//////////////////////////////////////////////////////
-
 model Other {
   id              Int @id @default(autoincrement())
   itemName        String
@@ -425,10 +324,6 @@ model Other {
 
   @@map("other_assets")
 }
-
-//////////////////////////////////////////////////////
-// ASSET ASSIGNMENT
-//////////////////////////////////////////////////////
 
 model AssetAssignment {
   id              Int @id @default(autoincrement())
@@ -451,10 +346,6 @@ model AssetAssignment {
   @@index([assignedById])
   @@map("asset_assignments")
 }
-
-//////////////////////////////////////////////////////
-// AUDIT LOG
-//////////////////////////////////////////////////////
 
 model AuditLog {
   id               Int @id @default(autoincrement())
