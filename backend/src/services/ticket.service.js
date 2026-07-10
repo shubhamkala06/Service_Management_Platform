@@ -1,7 +1,7 @@
 const repository = require("../repositories/ticket.repository");
 const { calculateDeadline } = require("../utils/sla.util");
 const { generateTicketNumber } = require("../utils/ticket-number.util");
-// const logger = require("../config/logger");
+const logger = require("../config/logger");
 const AppError = require("../errors/app-error.js");
 const { get } = require("../app.js");
 
@@ -115,6 +115,50 @@ async function uploadAttachment(commentId, file, loggedInUser) {
   return attachment;
 }
 
+async function assignTicket(ticketId, assignedToId, loggedInUser) {
+  // 1. Find Ticket
+  const ticket = await repository.findTicketById(ticketId);
+  if (!ticket) {
+    throw new AppError(404, "Ticket not found.");
+  }
+  // 2. Closed Ticket Check
+  if (ticket.status === "CLOSED") {
+    throw new AppError(400, "Closed ticket cannot be assigned.");
+  }
+  // 3. Find Engineer
+  const engineer = await repository.findUserById(assignedToId);
+  if (!engineer) {
+    throw new AppError(404, "Support engineer not found.");
+  }
+  // 4. Active Check
+  if (!engineer.isActive) {
+    throw new AppError(400, "Support engineer is inactive.");
+  }
+  // 5. Role Check
+  if (engineer.role.name !== "SUPPORT_ENGINEER") {
+    throw new AppError(
+      400,
+      "Ticket can only be assigned to a Support Engineer.",
+    );
+  }
+  // 6. Already Assigned?
+  if (ticket.assignedToId === engineer.id) {
+    throw new AppError(400, "Ticket is already assigned to this engineer.");
+  }
+  // 7. Assign Ticket
+  const updatedTicket = await repository.assignTicketWithHistory(
+    ticket.id,
+    engineer.id,
+    loggedInUser.id,
+  );
+
+  logger.info(
+    `Ticket ${ticket.ticketNumber} assigned to ${engineer.firstName} ${engineer.lastName} by Admin ${loggedInUser.id}`,
+  );
+
+  return updatedTicket;
+}
+
 module.exports = {
   createTicket,
   createTicket,
@@ -122,4 +166,5 @@ module.exports = {
   getTicketById,
   addComment,
   uploadAttachment,
+  assignTicket,
 };

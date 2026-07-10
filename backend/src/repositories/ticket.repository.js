@@ -2,6 +2,17 @@ const prisma = require("../config/prisma");
 const logger = require("../config/logger");
 const { get } = require("../app");
 
+async function findUserById(userId) {
+  return prisma.user.findUnique({
+    where: {
+      id: Number(userId),
+    },
+    include: {
+      role: true,
+    },
+  });
+}
+
 async function findCategoryById(categoryId) {
   return prisma.supportCategory.findFirst({
     where: {
@@ -231,7 +242,32 @@ async function createAttachment(data) {
   });
 }
 
+async function assignTicketWithHistory(ticketId, assignedToId, adminId) {
+  return prisma.$transaction(async (tx) => {
+    const updatedTicket = await tx.ticket.update({
+      where: {
+        id: Number(ticketId),
+      },
+      data: {
+        assignedToId,
+        status: "ASSIGNED",
+      },
+    });
+    await tx.ticketStatusHistory.create({
+      data: {
+        ticketId: Number(ticketId),
+        oldStatus: "OPEN",
+        newStatus: "ASSIGNED",
+        remarks: "Ticket assigned.",
+        changedById: adminId,
+      },
+    });
+    return updatedTicket;
+  });
+}
+
 module.exports = {
+  findUserById,
   findCategoryById,
   getLastTicket,
   createTicketWithHistory,
@@ -240,4 +276,5 @@ module.exports = {
   findTicketById,
   createComment,
   createAttachment,
+  assignTicketWithHistory,
 };

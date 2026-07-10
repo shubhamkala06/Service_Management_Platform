@@ -51,7 +51,26 @@ function validateAddComment(req, res, next) {
   next();
 }
 
+function validateAssignTicket(req, res, next) {
+  const { assignedToId } = req.body;
+
+  if (!assignedToId) {
+    return res.status(400).json({
+      message: "assignedToId is required.",
+    });
+  }
+
+  if (isNaN(assignedToId)) {
+    return res.status(400).json({
+      message: "assignedToId must be a number.",
+    });
+  }
+
+  next();
+}
+
 module.exports = {
   validateCreateTicket,
   validateAddComment,
+  validateAssignTicket,
 };

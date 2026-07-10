@@ -39,4 +39,12 @@ router.post(
   ticketController.uploadAttachment,
 );
 
+router.patch(
+  "/:ticketId/assign",
+  authenticate,
+  authorize("ADMIN"),
+  validateAssignTicket,
+  ticketController.assignTicket,
+);
+
 module.exports = router;
