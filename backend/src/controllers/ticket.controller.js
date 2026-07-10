@@ -2,6 +2,8 @@ const ticketService = require("../services/ticket.service");
 const sendResponse = require("../utils/response.util");
 const logger = require("../config/logger");
 const { get } = require("../app");
+const AppError = require("../errors/app-error.js");
+
 async function createTicket(req, res, next) {
   try {
     logger.info(`Create Ticket API called by User ID ${req.user.id}`);
@@ -39,8 +41,44 @@ async function getTicketById(req, res, next) {
   }
 }
 
+async function addComment(req, res, next) {
+  try {
+    const comment = await ticketService.addComment(
+      req.params.ticketId,
+      req.body.content,
+      req.user,
+    );
+    return sendResponse(res, 201, "Comment added successfully.", comment);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function uploadAttachment(req, res, next) {
+  try {
+    if (!req.file) {
+      throw new AppError(400, "No file uploaded.");
+    }
+    const attachment = await ticketService.uploadAttachment(
+      req.params.commentId,
+      req.file,
+      req.user,
+    );
+    return sendResponse(
+      res,
+      201,
+      "Attachment uploaded successfully.",
+      attachment,
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createTicket,
   getMyTickets,
   getTicketById,
+  addComment,
+  uploadAttachment,
 };

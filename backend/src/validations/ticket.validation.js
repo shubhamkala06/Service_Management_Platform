@@ -41,6 +41,17 @@ function validateCreateTicket(req, res, next) {
   next();
 }
 
+function validateAddComment(req, res, next) {
+  const { content } = req.body;
+  if (!content || content.trim() === "") {
+    return res.status(400).json({
+      message: "Comment is required.",
+    });
+  }
+  next();
+}
+
 module.exports = {
   validateCreateTicket,
+  validateAddComment,
 };

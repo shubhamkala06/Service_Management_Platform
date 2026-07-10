@@ -70,9 +70,56 @@ async function getTicketById(ticketId, loggedInUser) {
   return ticket;
 }
 
+async function addComment(ticketId, content, loggedInUser) {
+  const ticket = await repository.findTicketById(ticketId);
+  if (!ticket) {
+    throw new AppError(404, "Ticket not found.");
+  }
+  if (ticket.status === "CLOSED") {
+    throw new AppError(400, "Cannot comment on a closed ticket.");
+  }
+
+  if (
+    loggedInUser.role === "EMPLOYEE" &&
+    ticket.createdById !== loggedInUser.id
+  ) {
+    throw new AppError(
+      403,
+      "You are not authorized to comment on this ticket.",
+    );
+  }
+
+  const comment = await repository.createComment({
+    content,
+    ticketId: Number(ticketId),
+    userId: loggedInUser.id,
+  });
+
+  logger.info(
+    `Comment added on Ticket ${ticket.ticketNumber} by User ${loggedInUser.id}`,
+  );
+
+  return comment;
+}
+
+async function uploadAttachment(commentId, file, loggedInUser) {
+  const attachment = await repository.createAttachment({
+    fileName: file.filename,
+    filePath: `/uploads/tickets/${file.filename}`,
+    fileType: file.mimetype,
+    fileSize: file.size,
+    uploadedById: loggedInUser.id,
+    commentId: Number(commentId),
+  });
+  logger.info(`Attachment uploaded by User ${loggedInUser.id}`);
+  return attachment;
+}
+
 module.exports = {
   createTicket,
   createTicket,
   getMyTickets,
   getTicketById,
+  addComment,
+  uploadAttachment,
 };

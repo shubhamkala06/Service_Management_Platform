@@ -193,6 +193,7 @@ model Comment {
 model Attachment {
   id           Int      @id @default(autoincrement())
   fileName     String
+  filePath     String
   fileType     String
   fileSize     Int
   uploadedOn   DateTime @default(now())

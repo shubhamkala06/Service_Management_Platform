@@ -201,10 +201,43 @@ async function getTicketById(ticketId) {
   });
 }
 
+async function findTicketById(ticketId) {
+  return prisma.ticket.findUnique({
+    where: {
+      id: Number(ticketId),
+    },
+  });
+}
+
+async function createComment(commentData) {
+  return prisma.comment.create({
+    data: commentData,
+
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
+  });
+}
+
+async function createAttachment(data) {
+  return prisma.attachment.create({
+    data,
+  });
+}
+
 module.exports = {
   findCategoryById,
   getLastTicket,
   createTicketWithHistory,
   getTicketsByUserId,
   getTicketById,
+  findTicketById,
+  createComment,
+  createAttachment,
 };
