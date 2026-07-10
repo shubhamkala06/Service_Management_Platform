@@ -20,4 +20,12 @@ router.post(
   ticketController.createTicket,
 );
 
+router.get(
+  "/my",
+  authenticate,
+  authorize("EMPLOYEE"),
+  ticketController.getMyTickets,
+);
+router.get("/:ticketId", authenticate, ticketController.getTicketById);
+
 module.exports = router;

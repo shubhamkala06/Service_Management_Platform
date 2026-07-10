@@ -1,6 +1,9 @@
 const repository = require("../repositories/ticket.repository");
 const { calculateDeadline } = require("../utils/sla.util");
 const { generateTicketNumber } = require("../utils/ticket-number.util");
+// const logger = require("../config/logger");
+const AppError = require("../errors/app-error.js");
+const { get } = require("../app.js");
 
 const TicketStatus = {
   OPEN: "OPEN",
@@ -12,7 +15,7 @@ async function createTicket(payload, userId) {
   // Category Validation
   const category = await repository.findCategoryById(categoryId);
   if (!category) {
-    throw new Error("Support category not found.");
+    throw new AppError(404, "Support category not found.");
   }
 
   const slaPolicy = category.slaPolicies || null;
@@ -46,6 +49,30 @@ async function createTicket(payload, userId) {
   return repository.createTicketWithHistory(ticketData, historyData);
 }
 
+async function getMyTickets(userId, filters) {
+  const tickets = await repository.getTicketsByUserId(userId, filters);
+  return tickets;
+}
+
+async function getTicketById(ticketId, loggedInUser) {
+  const ticket = await repository.getTicketById(ticketId);
+  if (!ticket) {
+    throw new AppError(404, "Ticket not found.");
+  }
+
+  if (
+    loggedInUser.role === "EMPLOYEE" &&
+    ticket.createdById !== loggedInUser.id
+  ) {
+    throw new AppError(403, "You are not authorized to access this ticket.");
+  }
+
+  return ticket;
+}
+
 module.exports = {
   createTicket,
+  createTicket,
+  getMyTickets,
+  getTicketById,
 };
