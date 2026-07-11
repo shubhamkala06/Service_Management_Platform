@@ -29,3 +29,4 @@ backend/uploads/
 
 # Prisma generated files (optional)
 prisma/dev.db
+/src/generated/prisma

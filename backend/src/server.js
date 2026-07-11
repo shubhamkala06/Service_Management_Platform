@@ -1,11 +1,24 @@
-require("dotenv").config();
+const path = require("path");
+const app = require(path.join(__dirname,"/app"));
+const {prisma} = require(path.join(__dirname,"/database"))
+const config = require(path.join(__dirname,"/config/env"))
 
-const app = require("./app");
 
-const PORT = process.env.PORT || 5000;
+async function start() {
+    try {
+        await prisma.$connect();
 
-app.listen(PORT, () => {
-  console.log("--------------------------------");
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log("--------------------------------");
-});
+        console.log("Connected to PostgreSQL");
+
+        app.listen(config.app.port, () => {
+            console.log(`Server running on port ${config.app.port}`);
+        });
+    } catch (err) {
+        console.error("Failed to start application");
+        console.error(err);
+
+        process.exit(1);
+    }
+}
+
+start();
