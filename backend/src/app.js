@@ -1,8 +1,15 @@
 const express = require("express");
 
+const {
+  notFoundHandler,
+  errorHandler,
+} = require("./errors");
+
 const app = express();
 
-// ---------------- Middleware ----------------
+// ---------------- Pre-route Middleware ----------------
+
+app.use(express.json());
 
 // ---------------- Routes ----------------
 
@@ -11,5 +18,10 @@ app.get("/health", (req, res) => {
     status: "ok",
   });
 });
+
+// ---------------- Post-route Middleware ----------------
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

@@ -19,7 +19,7 @@ async function bootstrap() {
         });
     } catch (err) {
         logger.error(
-            { err: err },
+            { err },
             "Application startup failed."
         );
 
@@ -48,7 +48,7 @@ async function shutdown() {
         await prisma.$disconnect();
     } catch (err) {
         logger.error(
-            { err: err },
+            { err },
             "Application shutdown failed."
         );
         code = 1
