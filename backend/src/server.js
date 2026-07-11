@@ -1,16 +1,15 @@
-const path = require("path");
-const app = require(path.join(__dirname,"/app"));
-const {prisma} = require(path.join(__dirname,"/database"))
-const config = require(path.join(__dirname,"/config/env"))
+const app = require("./app");
+const {prisma, redis} = require("./database")
+const config = require("./config/env")
 
-
-async function start() {
+let server = null;
+async function bootstrap() {
     try {
         await prisma.$connect();
-
+        await redis.connect();
         console.log("Connected to PostgreSQL");
-
-        app.listen(config.app.port, () => {
+        console.log("Connected to Redis");
+        server = app.listen(config.app.port, () => {
             console.log(`Server running on port ${config.app.port}`);
         });
     } catch (err) {
@@ -21,4 +20,34 @@ async function start() {
     }
 }
 
-start();
+let shuttingDown = false;
+
+async function shutdown() {
+    if (shuttingDown) return;
+    let code = 0;
+    shuttingDown = true;
+
+    console.log("Shutting down gracefully");
+
+    try {
+        if (server) {
+            await new Promise((resolve) => server.close(resolve));
+        }
+
+        if (redis.isOpen) {
+            await redis.quit();
+        }
+
+        await prisma.$disconnect();
+    } catch (err) {
+        console.error(err);
+        code = 1
+    } finally {
+        process.exit(code);
+    }
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
+bootstrap();
