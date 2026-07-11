@@ -1,4 +1,5 @@
 const {createClient} = require("redis");
+
 const config = require("../config/env");
 
 const redis = createClient({

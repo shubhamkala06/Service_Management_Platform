@@ -13,6 +13,8 @@ const envSchema = z.object({
   REDIS_URL: z.url(),
 
   SESSION_SECRET: z.string().min(10),
+
+  LOG_LEVEL: z.enum(["trace","debug","info","warn","error","fatal"])
 });
 
 const result = envSchema.safeParse(process.env);
@@ -26,7 +28,10 @@ if (!result.success) {
 module.exports = Object.freeze({
   app:{
     env: result.data.NODE_ENV,
-    port:result.data.PORT
+    port:result.data.PORT,
+  },
+  logger:{
+    level: result.data.LOG_LEVEL
   },
   database:{
     url: result.data.DATABASE_URL

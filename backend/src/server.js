@@ -1,20 +1,27 @@
 const app = require("./app");
-const {prisma, redis} = require("./database")
+
 const config = require("./config/env")
+const {prisma, redis} = require("./database")
+const {logger} = require("./logger");
 
 let server = null;
 async function bootstrap() {
     try {
         await prisma.$connect();
         await redis.connect();
-        console.log("Connected to PostgreSQL");
-        console.log("Connected to Redis");
+        logger.info("Connected to PostgreSQL.");
+        logger.info("Connected to Redis.");
         server = app.listen(config.app.port, () => {
-            console.log(`Server running on port ${config.app.port}`);
+            logger.info(
+                { port: config.app.port },
+                "HTTP server started."
+            );
         });
     } catch (err) {
-        console.error("Failed to start application");
-        console.error(err);
+        logger.error(
+            { err: err },
+            "Application startup failed."
+        );
 
         process.exit(1);
     }
@@ -27,7 +34,7 @@ async function shutdown() {
     let code = 0;
     shuttingDown = true;
 
-    console.log("Shutting down gracefully");
+    logger.info("Application shutting down")
 
     try {
         if (server) {
@@ -40,7 +47,10 @@ async function shutdown() {
 
         await prisma.$disconnect();
     } catch (err) {
-        console.error(err);
+        logger.error(
+            { err: err },
+            "Application shutdown failed."
+        );
         code = 1
     } finally {
         process.exit(code);
