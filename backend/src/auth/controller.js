@@ -39,6 +39,7 @@ async function callback(req, res) {
     clearLoginState(res);
 
     res.json({
+        tokenSet,
         claims,
         userInfo,
     });

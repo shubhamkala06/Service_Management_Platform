@@ -14,7 +14,7 @@ async function buildAuthorizationRequest() {
 
     const authorizationUrl = oidc.buildAuthorizationUrl(configuration, {
         redirect_uri: config.oidc.redirect_uri,
-        scope: "openid profile email",
+        scope: "openid profile email employee",
         code_challenge: codeChallenge,
         code_challenge_method: "S256",
         state,
