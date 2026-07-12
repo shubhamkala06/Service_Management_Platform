@@ -1,16 +1,18 @@
 const app = require("./app");
 
-const config = require("./config/env")
-const {prisma, redis} = require("./database")
+const config = require("./config/env");
+const auth = require("./auth");
+const {prisma, redis} = require("./database");
 const {logger} = require("./logger");
 
 let server = null;
 async function bootstrap() {
     try {
         await prisma.$connect();
-        await redis.connect();
         logger.info("Connected to PostgreSQL.");
+        await redis.connect();
         logger.info("Connected to Redis.");
+        await auth.initialize()
         server = app.listen(config.app.port, () => {
             logger.info(
                 { port: config.app.port },
