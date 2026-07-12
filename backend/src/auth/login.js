@@ -1,18 +1,18 @@
-const client = require("openid-client");
+const oidc = require("openid-client");
 
 const config = require("../config/env");
-const {getConfiguration} = require("./client");
+const { getConfiguration } = require("./client");
 
 async function buildAuthorizationRequest() {
-    const oidc = getConfiguration();
+    const configuration = getConfiguration();
 
-    const codeVerifier = client.randomPKCECodeVerifier();
-    const codeChallenge = await client.calculatePKCECodeChallenge(codeVerifier);
+    const codeVerifier = oidc.randomPKCECodeVerifier();
+    const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
 
-    const state = client.randomState();
-    const nonce = client.randomNonce();
+    const state = oidc.randomState();
+    const nonce = oidc.randomNonce();
 
-    const authorizationUrl = client.buildAuthorizationUrl(oidc, {
+    const authorizationUrl = oidc.buildAuthorizationUrl(configuration, {
         redirect_uri: config.oidc.redirect_uri,
         scope: "openid profile email",
         code_challenge: codeChallenge,
@@ -20,18 +20,17 @@ async function buildAuthorizationRequest() {
         state,
         nonce,
     });
-    
+
     return {
         authorizationUrl,
-        protocolState: {
+        loginState: {
             state,
             nonce,
             codeVerifier,
         },
     };
-
 }
 
 module.exports = {
     buildAuthorizationRequest,
-}
+};

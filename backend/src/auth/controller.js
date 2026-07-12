@@ -1,24 +1,50 @@
-const {buildAuthorizationRequest} = require("./login");
+const { buildAuthorizationRequest } = require("./login");
+const { exchangeAuthorizationCode } = require("./callback");
 
-async function login(req,res) {
-    const {authorizationUrl,protocolState} = await buildAuthorizationRequest();
+const {
+    storeLoginState,
+    readLoginState,
+    clearLoginState,
+} = require("./loginState");
 
-    res.cookie(
-        "oidc_state",
-        JSON.stringify(protocolState),
-        {
-            httpOnly: true,
-            signed: true,
-            sameSite: "lax",
-            // secure: process.env.NODE_ENV === "production",
-            maxAge: 3 * 60 * 1000,
-        }
-    );
+const { AppError } = require("../errors");
+
+async function login(req, res) {
+    const { authorizationUrl, loginState } =
+        await buildAuthorizationRequest();
+
+    storeLoginState(res, loginState);
 
     res.redirect(authorizationUrl.href);
+}
 
+async function callback(req, res) {
+    const loginState = readLoginState(req);
+
+    if (!loginState) {
+        throw new AppError("Invalid login request.", 400);
+    }
+
+    const currentUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+
+    const {
+        tokenSet,
+        claims,
+        userInfo,
+    } = await exchangeAuthorizationCode({
+        currentUrl,
+        loginState,
+    });
+
+    clearLoginState(res);
+
+    res.json({
+        claims,
+        userInfo,
+    });
 }
 
 module.exports = {
     login,
+    callback,
 };
