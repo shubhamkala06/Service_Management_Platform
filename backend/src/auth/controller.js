@@ -5,7 +5,7 @@ const {
     storeLoginState,
     readLoginState,
     clearLoginState,
-} = require("./services/loginState");
+} = require("./loginState");
 
 const { AppError } = require("../errors");
 
