@@ -2,64 +2,65 @@ const app = require("./app");
 
 const config = require("./config/env");
 const auth = require("./auth");
-const {prisma, redis} = require("./database");
-const {logger} = require("./logger");
+const database = require("./database");
+const { logger } = require("./logger");
 
 let server = null;
-async function bootstrap() {
-    try {
-        await prisma.$connect();
-        logger.info("Connected to PostgreSQL.");
-        await redis.connect();
-        logger.info("Connected to Redis.");
-        await auth.initialize()
-        server = app.listen(config.app.port, () => {
-            logger.info(
-                { port: config.app.port },
-                "HTTP server started."
-            );
-        });
-    } catch (err) {
-        logger.error(
-            { err },
-            "Application startup failed."
-        );
-
-        process.exit(1);
-    }
-}
-
 let shuttingDown = false;
 
-async function shutdown() {
-    if (shuttingDown) return;
-    let code = 0;
-    shuttingDown = true;
+async function bootstrap() {
+  try {
+    await database.initialize();
+    await auth.initialize();
 
-    logger.info("Application shutting down")
+    server = app.listen(config.app.port, () => {
+      logger.info(
+        { port: config.app.port },
+        "HTTP server started."
+      );
+    });
+  } catch (err) {
+    logger.error(
+      { err },
+      "Application startup failed."
+    );
 
-    try {
-        if (server) {
-            await new Promise((resolve) => server.close(resolve));
-        }
-
-        if (redis.isOpen) {
-            await redis.quit();
-        }
-
-        await prisma.$disconnect();
-    } catch (err) {
-        logger.error(
-            { err },
-            "Application shutdown failed."
-        );
-        code = 1
-    } finally {
-        process.exit(code);
-    }
+    process.exit(1);
+  }
 }
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
+  let exitCode = 0;
+
+  logger.info(
+    { signal },
+    "Shutting down application."
+  );
+
+  try {
+    // Stop accepting new connections.
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
+
+    // Shut down application resources.
+    await database.shutdown();
+  } catch (err) {
+    logger.error(
+      { err },
+      "Error during shutdown."
+    );
+
+    exitCode = 1;
+  } finally {
+    process.exit(exitCode);
+  }
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 bootstrap();
