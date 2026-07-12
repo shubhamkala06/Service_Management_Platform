@@ -8,7 +8,7 @@ const envSchema = z.object({
   PORT : z.coerce.number().int().positive(),
   DATABASE_URL : z.url(),
   REDIS_URL : z.url(),
-  SESSION_SECRET: z.string().min(10),
+  COOKIE_SECRET: z.string().min(10),
   LOG_LEVEL : z.enum(["trace","debug","info","warn","error","fatal"]),
   OIDC_ISSUER : z.url(),
   OIDC_CLIENT_ID : z.string().min(10),
@@ -38,13 +38,13 @@ module.exports = Object.freeze({
   redis:{
     url: result.data.REDIS_URL
   },
-  session:{
-    secret: result.data.SESSION_SECRET
-  },
   oidc:{
     issuer: result.data.OIDC_ISSUER,
     client_id: result.data.OIDC_CLIENT_ID,
     client_secret: result.data.OIDC_CLIENT_SECRET,
     redirect_uri: result.data.OIDC_REDIRECT_URI
+  },
+  cookie:{
+    secret: result.data.COOKIE_SECRET
   }
 });
