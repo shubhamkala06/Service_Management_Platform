@@ -1,7 +1,7 @@
 const oidc = require("openid-client");
 
 // const config = require("../config/env");
-const { getConfiguration } = require("./client");
+const { getConfiguration } = require("../client");
 
 async function exchangeAuthorizationCode({
     currentUrl,

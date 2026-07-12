@@ -7,7 +7,7 @@ const {
   errorHandler,
 } = require("./errors");
 
-const authRoutes = require("./auth/routes");
+const {authRoutes} = require("./auth");
 
 
 const app = express();

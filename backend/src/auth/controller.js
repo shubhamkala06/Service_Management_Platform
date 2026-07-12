@@ -1,11 +1,11 @@
-const { buildAuthorizationRequest } = require("./login");
-const { exchangeAuthorizationCode } = require("./callback");
+const { buildAuthorizationRequest } = require("./services/login");
+const { exchangeAuthorizationCode } = require("./services/callback");
 
 const {
     storeLoginState,
     readLoginState,
     clearLoginState,
-} = require("./loginState");
+} = require("./services/loginState");
 
 const { AppError } = require("../errors");
 

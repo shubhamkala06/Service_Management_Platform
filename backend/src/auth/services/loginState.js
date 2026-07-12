@@ -1,4 +1,4 @@
-const config = require("../config/env");
+const config = require("../../config/env");
 
 const COOKIE_NAME = "login_state";
 
