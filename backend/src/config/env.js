@@ -14,6 +14,10 @@ const envSchema = z.object({
   OIDC_CLIENT_ID : z.string().min(10),
   OIDC_CLIENT_SECRET : z.string().min(10),
   OIDC_REDIRECT_URI : z.url(),
+  JWT_SECRET : z.string().min(10),
+  JWT_ISSUER : z.string().trim().min(1),
+  JWT_AUDIENCE : z.string().trim().min(1),
+  JWT_EXPIRATION_SECONDS: z.coerce.number().int().min(1).max(1800)
 });
 
 const result = envSchema.safeParse(process.env);
@@ -46,5 +50,11 @@ module.exports = Object.freeze({
   },
   cookie:{
     secret: result.data.COOKIE_SECRET
+  },
+  jwt:{
+    secret: result.data.JWT_SECRET,
+    issuer: result.data.JWT_ISSUER,
+    audience: result.data.JWT_AUDIENCE,
+    expirationSeconds: result.data.JWT_EXPIRATION_SECONDS
   }
 });

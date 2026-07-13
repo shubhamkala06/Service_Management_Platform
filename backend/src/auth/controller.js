@@ -1,6 +1,7 @@
 const userService = require("../user");
 const { buildAuthorizationRequest } = require("./services/login");
 const { exchangeAuthorizationCode } = require("./services/callback");
+const jwt = require("./services/jwt")
 
 const {
     storeLoginState,
@@ -48,7 +49,9 @@ async function callback(req, res) {
 
     user = await userService.createUser(userInfo);
 
-    res.json(user);
+    const token = await jwt.issue(user);
+
+    res.json(token);
 }
 
 module.exports = {
