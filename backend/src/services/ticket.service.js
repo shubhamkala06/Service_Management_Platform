@@ -8,6 +8,14 @@ const { get } = require("../app.js");
 const TicketStatus = {
   OPEN: "OPEN",
 };
+const allowedTransitions = {
+  OPEN: ["ASSIGNED"],
+  ASSIGNED: ["IN_PROGRESS"],
+  IN_PROGRESS: ["PENDING_USER_RESPONSE", "RESOLVED"],
+  PENDING_USER_RESPONSE: ["IN_PROGRESS"],
+  RESOLVED: ["CLOSED"],
+  CLOSED: [],
+};
 
 async function createTicket(payload, userId) {
   const { title, description, priority, categoryId } = payload;
@@ -159,6 +167,57 @@ async function assignTicket(ticketId, assignedToId, loggedInUser) {
   return updatedTicket;
 }
 
+async function updateTicketStatus(ticketId, payload, loggedInUser) {
+  const { status, remarks } = payload;
+
+  // Find Ticket
+  const ticket = await repository.findTicketById(ticketId);
+  if (!ticket) {
+    throw new ApiError(404, "Ticket not found.");
+  }
+
+  // Closed Ticket
+  if (ticket.status === "CLOSED") {
+    throw new ApiError(400, "Closed ticket cannot be modified.");
+  }
+
+  // Permission
+  if (
+    loggedInUser.role === "SUPPORT_ENGINEER" &&
+    ticket.assignedToId !== loggedInUser.id
+  ) {
+    throw new ApiError(403, "You are not assigned to this ticket.");
+  }
+
+  // Transition Validation
+  const allowed = allowedTransitions[ticket.status];
+  if (!allowed.includes(status)) {
+    throw new ApiError(
+      400,
+      `Cannot change ticket status from ${ticket.status} to ${status}.`,
+    );
+  }
+
+  // resolvedAt
+  const resolvedAt = status === "RESOLVED" ? new Date() : ticket.resolvedAt;
+
+  // Update
+  const updatedTicket = await repository.updateStatusWithHistory(
+    ticket.id,
+    status,
+    ticket.status,
+    remarks,
+    loggedInUser.id,
+    resolvedAt,
+  );
+
+  logger.info(
+    `Ticket ${ticket.ticketNumber} status changed from ${ticket.status} to ${status}`,
+  );
+
+  return updatedTicket;
+}
+
 module.exports = {
   createTicket,
   createTicket,
@@ -167,4 +226,5 @@ module.exports = {
   addComment,
   uploadAttachment,
   assignTicket,
+  updateTicketStatus,
 };

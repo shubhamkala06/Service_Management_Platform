@@ -266,6 +266,40 @@ async function assignTicketWithHistory(ticketId, assignedToId, adminId) {
   });
 }
 
+async function updateStatusWithHistory(
+  ticketId,
+  newStatus,
+  oldStatus,
+  remarks,
+  changedById,
+  resolvedAt = null,
+) {
+  return prisma.$transaction(async (tx) => {
+    const updatedTicket = await tx.ticket.update({
+      where: {
+        id: Number(ticketId),
+      },
+
+      data: {
+        status: newStatus,
+        resolvedAt,
+      },
+    });
+
+    await tx.ticketStatusHistory.create({
+      data: {
+        ticketId: Number(ticketId),
+        oldStatus,
+        newStatus,
+        remarks,
+        changedById,
+      },
+    });
+
+    return updatedTicket;
+  });
+}
+
 module.exports = {
   findUserById,
   findCategoryById,
@@ -277,4 +311,5 @@ module.exports = {
   createComment,
   createAttachment,
   assignTicketWithHistory,
+  updateStatusWithHistory,
 };

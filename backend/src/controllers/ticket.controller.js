@@ -88,6 +88,24 @@ async function assignTicket(req, res, next) {
   }
 }
 
+async function updateTicketStatus(req, res, next) {
+  try {
+    const ticket = await ticketService.updateTicketStatus(
+      req.params.ticketId,
+      req.body,
+      req.user,
+    );
+    return sendResponse(
+      res,
+      200,
+      "Ticket status updated successfully.",
+      ticket,
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createTicket,
   getMyTickets,
@@ -95,4 +113,5 @@ module.exports = {
   addComment,
   uploadAttachment,
   assignTicket,
+  updateTicketStatus,
 };

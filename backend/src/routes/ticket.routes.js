@@ -47,4 +47,12 @@ router.patch(
   ticketController.assignTicket,
 );
 
+router.patch(
+  "/:ticketId/status",
+  authenticate,
+  authorize("ADMIN", "SUPPORT_ENGINEER"),
+  validateUpdateStatus,
+  ticketController.updateTicketStatus,
+);
+
 module.exports = router;
