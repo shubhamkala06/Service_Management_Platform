@@ -8,6 +8,7 @@ const {
 } = require("./errors");
 
 const {authRoutes} = require("./auth");
+const {requireAuth} = require("./middleware/");
 
 
 const app = express();
@@ -23,6 +24,10 @@ app.get("/health", (req, res) => {
     status: "ok",
   });
 });
+
+app.get("/me",requireAuth,(req,res)=>{
+  res.json(req.user);
+})
 
 app.use("/auth",authRoutes);
 

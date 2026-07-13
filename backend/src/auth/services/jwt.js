@@ -1,4 +1,4 @@
-const { SignJWT } = require("jose");
+const { SignJWT, jwtVerify } = require("jose");
 const crypto = require("crypto");
 
 const config = require("../../config/env");
@@ -25,6 +25,15 @@ async function issue(user) {
     };
 }
 
+async function verify(token) {
+    const {payload} = await jwtVerify(token,secret,{
+        issuer: config.jwt.issuer,
+        audience: config.jwt.audience
+    });
+    return payload;
+}
+
 module.exports = {
     issue,
+    verify
 };

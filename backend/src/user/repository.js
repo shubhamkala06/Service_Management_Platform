@@ -8,6 +8,24 @@ async function findByOidcSubject(oidcSubject) {
     });
 }
 
+async function findById(id) {
+    return prisma.user.findUnique({
+        where: {
+            id,
+        },
+        select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            displayName: true,
+            department: true,
+            isActive: true,
+            role: true,
+        },
+    });
+}
+
 async function findRoleByName(name) {
     return prisma.role.findUnique({
         where: {
@@ -34,6 +52,7 @@ async function update(id, userData) {
 module.exports = {
     findByOidcSubject,
     findRoleByName,
+    findById,
     create,
     update,
 };

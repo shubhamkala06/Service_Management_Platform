@@ -10,4 +10,6 @@ module.exports = {
     authenticate: callback.exchangeAuthorizationCode,
 
     authRoutes: require("./routes"),
+
+    verifyJWT: require("./services/jwt").verify
 };
