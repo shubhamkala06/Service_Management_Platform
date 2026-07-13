@@ -1,3 +1,4 @@
+const userService = require("../user");
 const { buildAuthorizationRequest } = require("./services/login");
 const { exchangeAuthorizationCode } = require("./services/callback");
 
@@ -8,6 +9,7 @@ const {
 } = require("./loginState");
 
 const { AppError } = require("../errors");
+const {logger} = require("../logger");
 
 async function login(req, res) {
     const { authorizationUrl, loginState } =
@@ -27,22 +29,26 @@ async function callback(req, res) {
 
     const currentUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
 
-    const {
-        tokenSet,
-        claims,
-        userInfo,
-    } = await exchangeAuthorizationCode({
+    const identity = await exchangeAuthorizationCode({
         currentUrl,
         loginState,
     });
 
     clearLoginState(res);
+    userInfo = {
+        oidcSubject: identity.userInfo.sub,
+        email:identity.userInfo.email,
+        firstName:identity.userInfo.first_name,
+        lastName:identity.userInfo.last_name,
+        displayName:identity.userInfo.name,
+        department:identity.userInfo.department,
+        phoneNumber:identity.userInfo.phone_number ? String(identity.userInfo.phone_number): null,
+        dateOfJoining:new Date(identity.userInfo.date_of_joining),
+    }
 
-    res.json({
-        tokenSet,
-        claims,
-        userInfo,
-    });
+    user = await userService.createUser(userInfo);
+
+    res.json(user);
 }
 
 module.exports = {
