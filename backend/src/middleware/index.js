@@ -1,3 +1,4 @@
 module.exports = {
-    requireAuth : require("./jwt.middleware").requireAuth
+    requireAuth : require("./authentication.middleware").requireAuth,
+    requireRoles: require("./authorization.middleware").requireRoles
 }

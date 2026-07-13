@@ -8,7 +8,7 @@ const {
 } = require("./errors");
 
 const {authRoutes} = require("./auth");
-const {requireAuth} = require("./middleware/");
+const {requireAuth, requireRoles} = require("./middleware/");
 
 
 const app = express();
@@ -24,6 +24,39 @@ app.get("/health", (req, res) => {
     status: "ok",
   });
 });
+
+app.get(
+    "/employee",
+    requireAuth,
+    requireRoles("Employee"),
+    (req, res) => {
+        res.json({
+            message: "Employee endpoint"
+        });
+    }
+);
+
+app.get(
+    "/manager",
+    requireAuth,
+    requireRoles("Manager"),
+    (req, res) => {
+        res.json({
+            message: "Manager endpoint"
+        });
+    }
+);
+
+app.get(
+    "/sysadmin",
+    requireAuth,
+    requireRoles("System Administrator"),
+    (req, res) => {
+        res.json({
+            message: "System Administrator endpoint"
+        });
+    }
+);
 
 app.get("/me",requireAuth,(req,res)=>{
   res.json(req.user);
