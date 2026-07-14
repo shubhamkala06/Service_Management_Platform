@@ -1,5 +1,5 @@
 const {verifyJWT} = require("../auth");
-const userRepository = require("../user/repository");       //will have to change this
+const {userRepsitory} = require("../user");       //will have to change this
 const { AppError } = require("../errors");
 
 async function requireAuth(req, res, next) {
@@ -17,7 +17,7 @@ async function requireAuth(req, res, next) {
 
     const payload = await verifyJWT(token);
 
-    const user = await userRepository.findById(payload.sub);
+    const user = await userRepsitory.findById(payload.sub);
 
     if (!user) {
         throw new AppError("Authentication required.", 401);

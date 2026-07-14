@@ -48,19 +48,17 @@ async function callback(req, res) {
 
     user = await userService.createUser(userInfo);
 
-    const token = await jwt.issue(user);
-
-    res.json(token);
     
-    // access_token = identity.tokenSet.access_token;
-
-    // res.cookie("access_token", access_token, {          //non pop-up
-    //     httpOnly: true,
-    //     secure: false,
-    //     sameSite: "lax"
-    // });
-
-    // res.redirect("http://localhost:5173");
+    access_token = identity.tokenSet.access_token;
+    console.log(access_token);
+    res.cookie("access_token", access_token, {          //non pop-up
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+    });
+    
+    res.json(user);
+    // res.redirect("http://localhost:5173/");
 }
 
 module.exports = {

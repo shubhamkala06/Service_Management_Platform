@@ -11,5 +11,6 @@ module.exports = {
 
     authRoutes: require("./routes"),
 
-    verifyJWT: require("./services/jwt").verify
+    verifyJWT: require("./services/jwt").validateAccessToken
+    // verifyJWT: require("./services/jwt").verify
 };
