@@ -1,5 +1,3 @@
-const config = require("../config/env");
-
 const COOKIE_NAME = "login_state";
 
 function storeLoginState(res, loginState) {

@@ -20,10 +20,8 @@ model User {
 
   firstName         String
   lastName          String
-  displayName       String
   
   department        String
-  phoneNumber       String?
   dateOfJoining     DateTime
 
   isActive          Boolean  @default(true)

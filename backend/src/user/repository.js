@@ -18,7 +18,6 @@ async function findById(id) {
             email: true,
             firstName: true,
             lastName: true,
-            displayName: true,
             department: true,
             isActive: true,
             role: true,

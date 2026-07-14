@@ -11,11 +11,7 @@ async function provisionUser(userInfo) {
         email: userInfo.email,
         firstName: userInfo.firstName,
         lastName: userInfo.lastName,
-        displayName: userInfo.displayName,
         department: userInfo.department,
-        phoneNumber: userInfo.phoneNumber
-            ? String(userInfo.phoneNumber)
-            : null,
         dateOfJoining: new Date(userInfo.dateOfJoining),
         lastLoginAt: new Date(),
     };

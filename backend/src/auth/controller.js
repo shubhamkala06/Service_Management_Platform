@@ -36,15 +36,14 @@ async function callback(req, res) {
     });
 
     clearLoginState(res);
+
     userInfo = {
-        oidcSubject: identity.userInfo.sub,
-        email:identity.userInfo.email,
-        firstName:identity.userInfo.first_name,
-        lastName:identity.userInfo.last_name,
-        displayName:identity.userInfo.name,
-        department:identity.userInfo.department,
-        phoneNumber:identity.userInfo.phone_number ? String(identity.userInfo.phone_number): null,
-        dateOfJoining:new Date(identity.userInfo.date_of_joining),
+        oidcSubject: identity.claims.sub,
+        email:identity.claims.email,
+        firstName:identity.claims.first_name,
+        lastName:identity.claims.last_name,
+        department:identity.claims.department,
+        dateOfJoining:new Date(identity.claims.date_of_joining),
     }
 
     user = await userService.createUser(userInfo);
@@ -52,6 +51,16 @@ async function callback(req, res) {
     const token = await jwt.issue(user);
 
     res.json(token);
+    
+    // access_token = identity.tokenSet.access_token;
+
+    // res.cookie("access_token", access_token, {          //non pop-up
+    //     httpOnly: true,
+    //     secure: false,
+    //     sameSite: "lax"
+    // });
+
+    // res.redirect("http://localhost:5173");
 }
 
 module.exports = {
