@@ -50,15 +50,14 @@ async function callback(req, res) {
 
     
     access_token = identity.tokenSet.access_token;
-    console.log(access_token);
+    
     res.cookie("access_token", access_token, {          //non pop-up
         httpOnly: true,
         secure: false,
         sameSite: "lax"
     });
     
-    res.json(user);
-    // res.redirect("http://localhost:5173/");
+    res.redirect("http://localhost:5173/");
 }
 
 module.exports = {

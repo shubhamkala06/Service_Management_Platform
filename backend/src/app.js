@@ -15,10 +15,11 @@ const {requireAuth, requireRoles} = require("./middleware/");
 const app = express();
 
 // ---------------- Pre-route Middleware ----------------
-// app.use(cors({
-//     origin: "http://localhost:5173",
-//     credentials: true
-// }));
+
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}));
 app.use(cookieParser(config.cookie.secret));
 app.use(express.json());
 

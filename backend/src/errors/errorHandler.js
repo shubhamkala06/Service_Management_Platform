@@ -14,7 +14,8 @@ function errorHandler(err, req, res, next) {
 
     if (statusCode >= 500) {
         logger.error(logData, "Request failed");
-    } else if (statusCode >= 400) {
+    }
+    else if (statusCode >= 400) {
         logger.warn(logData, "Client request failed");
     }
 
