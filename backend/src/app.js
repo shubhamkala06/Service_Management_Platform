@@ -32,7 +32,7 @@ app.get("/health", (req, res) => {
 });
 
 
-app.get("/api/me", requireAuth, (req, res) => {
+app.get("/me", requireAuth, (req, res) => {
     res.json(req.user);
 });
 

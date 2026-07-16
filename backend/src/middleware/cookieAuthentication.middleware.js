@@ -8,8 +8,8 @@ async function authenticate(req, res, next) {
     }
 
     try{
-        const claims = await verifyJWT(token);
-        req.user = claims;
+        const user = await verifyJWT(token);
+        req.user = user;
     }
     catch (err) {
         throw new AppError("Invalid access token",401);

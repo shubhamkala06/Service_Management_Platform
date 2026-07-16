@@ -10,7 +10,7 @@ const {
 } = require("./loginState");
 
 const { AppError } = require("../errors");
-const {logger} = require("../logger");
+const config = require("../config/env");
 
 async function login(req, res) {
     const { authorizationUrl, loginState } =
@@ -37,7 +37,7 @@ async function callback(req, res) {
 
     clearLoginState(res);
 
-    userInfo = {
+    const userInfo = {
         oidcSubject: identity.claims.sub,
         email:identity.claims.email,
         firstName:identity.claims.first_name,
@@ -46,18 +46,17 @@ async function callback(req, res) {
         dateOfJoining:new Date(identity.claims.date_of_joining),
     }
 
-    user = await userService.createUser(userInfo);
-
+    await userService.createUser(userInfo);
     
-    access_token = identity.tokenSet.access_token;
+    const accessToken = identity.tokenSet.access_token;
     
-    res.cookie("access_token", access_token, {          //non pop-up
+    res.cookie("access_token", accessToken, {
         httpOnly: true,
         secure: false,
         sameSite: "lax"
     });
-    
-    res.redirect("http://localhost:5173/");
+
+    res.redirect(`${config.frontend.url}/`);
 }
 
 module.exports = {

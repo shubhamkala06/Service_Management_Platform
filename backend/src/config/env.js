@@ -17,7 +17,8 @@ const envSchema = z.object({
   JWT_SECRET : z.string().min(10),
   JWT_ISSUER : z.string().trim().min(1),
   JWT_AUDIENCE : z.string().trim().min(1),
-  JWT_EXPIRATION_SECONDS: z.coerce.number().int().min(1).max(1800)
+  JWT_EXPIRATION_SECONDS: z.coerce.number().int().min(1).max(1800),
+  FRONTEND_URL: z.url()
 });
 
 const result = envSchema.safeParse(process.env);
@@ -56,5 +57,8 @@ module.exports = Object.freeze({
     issuer: result.data.JWT_ISSUER,
     audience: result.data.JWT_AUDIENCE,
     expirationSeconds: result.data.JWT_EXPIRATION_SECONDS
+  },
+  frontend:{
+    url: result.data.FRONTEND_URL
   }
 });
