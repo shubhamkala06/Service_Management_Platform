@@ -1,6 +1,4 @@
 const prisma = require("../config/prisma");
-const logger = require("../config/logger");
-const { get } = require("../app");
 
 async function findUserById(userId) {
   return prisma.user.findUnique({
@@ -9,18 +7,19 @@ async function findUserById(userId) {
     },
     include: {
       role: true,
+      supportTeam: true,
     },
   });
 }
 
 async function findCategoryById(categoryId) {
-  return prisma.supportCategory.findFirst({
+  return prisma.supportCategory.findUnique({
     where: {
-      id: categoryId,
-      isActive: true,
+      id: Number(categoryId),
     },
     include: {
       slaPolicy: true,
+      supportTeam: true,
     },
   });
 }
@@ -46,89 +45,93 @@ async function createTicketWithHistory(ticketData, historyData) {
       },
     });
 
-    logger.info(
-      `Ticket ${ticket.ticketNumber} created successfully by User ID ${userId}`,
-    );
-
     return ticket;
   });
+}
 
-  async function getTicketsByUserId(userId, filters) {
-    const {
-      page = 1,
-      limit = 10,
-      status,
-      priority,
-      categoryId,
-      search,
-      sortBy = "createdAt",
-      order = "desc",
-    } = filters;
+async function getTicketsByUserId(userId, filters) {
+  const {
+    page = 1,
+    limit = 10,
+    status,
+    priority,
+    categoryId,
+    search,
+    sortBy = "createdAt",
+    order = "desc",
+  } = filters;
 
-    const where = {
-      createdById: userId,
-    };
-    if (status) {
-      where.status = status;
-    }
-    if (priority) {
-      where.priority = priority;
-    }
-    if (categoryId) {
-      where.categoryId = Number(categoryId);
-    }
-    if (search) {
-      where.OR = [
-        {
-          title: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          description: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-      ];
-    }
+  const where = {
+    createdById: Number(userId),
+  };
 
-    const [tickets, total] = await prisma.$transaction([
-      prisma.ticket.findMany({
-        where,
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          assignedTo: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-
-        skip: (page - 1) * limit,
-        take: Number(limit),
-        orderBy: {
-          [sortBy]: order,
-        },
-      }),
-      prisma.ticket.count({
-        where,
-      }),
-    ]);
-
-    return {
-      tickets,
-      total,
-    };
+  if (status) {
+    where.status = status;
   }
+
+  if (priority) {
+    where.priority = priority;
+  }
+
+  if (categoryId) {
+    where.categoryId = Number(categoryId);
+  }
+
+  if (search) {
+    where.OR = [
+      {
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        description: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    ];
+  }
+
+  const [tickets, total] = await prisma.$transaction([
+    prisma.ticket.findMany({
+      where,
+
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+
+        assignedTo: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+
+      skip: (page - 1) * Number(limit),
+      take: Number(limit),
+
+      orderBy: {
+        [sortBy]: order,
+      },
+    }),
+
+    prisma.ticket.count({
+      where,
+    }),
+  ]);
+
+  return {
+    tickets,
+    total,
+  };
 }
 
 async function getTicketById(ticketId) {
@@ -242,26 +245,73 @@ async function createAttachment(data) {
   });
 }
 
-async function assignTicketWithHistory(ticketId, assignedToId, adminId) {
+/* ===========================================================
+   AUTO ASSIGNMENT
+=========================================================== */
+
+async function findLeastLoadedEngineer(supportTeamId) {
+  const engineers = await prisma.user.findMany({
+    where: {
+      role: {
+        name: "Support Engineer",
+      },
+
+      supportTeamId: Number(supportTeamId),
+
+      isActive: true,
+    },
+
+    include: {
+      _count: {
+        select: {
+          assignedTickets: {
+            where: {
+              status: {
+                in: ["ASSIGNED", "IN_PROGRESS", "PENDING_USER_RESPONSE"],
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (engineers.length === 0) {
+    return null;
+  }
+
+  return engineers.sort(
+    (a, b) => a._count.assignedTickets - b._count.assignedTickets,
+  )[0];
+}
+
+/* ===========================================================
+   REASSIGN TICKET
+=========================================================== */
+
+async function reassignTicketWithHistory(ticketId, assignedToId, adminId) {
   return prisma.$transaction(async (tx) => {
     const updatedTicket = await tx.ticket.update({
       where: {
         id: Number(ticketId),
       },
+
       data: {
-        assignedToId,
+        assignedToId: Number(assignedToId),
         status: "ASSIGNED",
       },
     });
+
     await tx.ticketStatusHistory.create({
       data: {
         ticketId: Number(ticketId),
         oldStatus: "OPEN",
         newStatus: "ASSIGNED",
-        remarks: "Ticket assigned.",
-        changedById: adminId,
+        remarks: "Ticket reassigned.",
+        changedById: Number(adminId),
       },
     });
+
     return updatedTicket;
   });
 }
@@ -292,7 +342,7 @@ async function updateStatusWithHistory(
         oldStatus,
         newStatus,
         remarks,
-        changedById,
+        changedById: Number(changedById),
       },
     });
 
@@ -310,6 +360,7 @@ module.exports = {
   findTicketById,
   createComment,
   createAttachment,
-  assignTicketWithHistory,
+  findLeastLoadedEngineer,
+  reassignTicketWithHistory,
   updateStatusWithHistory,
 };

@@ -7,7 +7,13 @@ const { get } = require("../app.js");
 
 const TicketStatus = {
   OPEN: "OPEN",
+  ASSIGNED: "ASSIGNED",
+  IN_PROGRESS: "IN_PROGRESS",
+  PENDING_USER_RESPONSE: "PENDING_USER_RESPONSE",
+  RESOLVED: "RESOLVED",
+  CLOSED: "CLOSED",
 };
+
 const allowedTransitions = {
   OPEN: ["ASSIGNED"],
   ASSIGNED: ["IN_PROGRESS"],
@@ -20,41 +26,63 @@ const allowedTransitions = {
 async function createTicket(payload, userId) {
   const { title, description, priority, categoryId } = payload;
 
-  // Category Validation
   const category = await repository.findCategoryById(categoryId);
   if (!category) {
     throw new AppError(404, "Support category not found.");
   }
 
-  const slaPolicy = category.slaPolicies || null;
+  const slaPolicy = category.slaPolicy;
+
+  const engineer = await repository.findLeastLoadedEngineer(
+    category.supportTeamId,
+  );
 
   const lastTicket = await repository.getLastTicket();
   const ticketNumber = generateTicketNumber(lastTicket?.id || 0);
 
   const deadline = calculateDeadline(slaPolicy?.resolutionTarget);
+  const status = engineer ? TicketStatus.ASSIGNED : TicketStatus.OPEN;
 
-  // Ticket Data
   const ticketData = {
     ticketNumber,
     title,
     description,
     priority,
-    status: TicketStatus.OPEN,
+    status,
     deadline,
     createdById: userId,
+    assignedToId: engineer?.id ?? null,
     categoryId,
-    slaPolicyId: slaPolicy?.id || null,
+    slaPolicyId: slaPolicy?.id ?? null,
   };
 
-  // Status History
   const historyData = {
     oldStatus: TicketStatus.OPEN,
-    newStatus: TicketStatus.OPEN,
-    remarks: "Ticket Created",
+    newStatus: status,
+    remarks: engineer
+      ? "Ticket automatically assigned."
+      : "Waiting for engineer assignment.",
     changedById: userId,
   };
 
-  return repository.createTicketWithHistory(ticketData, historyData);
+  const ticket = await repository.createTicketWithHistory(
+    ticketData,
+    historyData,
+  );
+
+  logger.info(`Ticket ${ticket.ticketNumber} created by User ${userId}`);
+
+  if (engineer) {
+    logger.info(
+      `Ticket ${ticket.ticketNumber} automatically assigned to ${engineer.firstName} ${engineer.lastName}`,
+    );
+  } else {
+    logger.warn(
+      `No active engineer found for Team ${category.supportTeam.name}. Ticket kept OPEN.`,
+    );
+  }
+
+  return ticket;
 }
 
 async function getMyTickets(userId, filters) {
@@ -123,7 +151,7 @@ async function uploadAttachment(commentId, file, loggedInUser) {
   return attachment;
 }
 
-async function assignTicket(ticketId, assignedToId, loggedInUser) {
+async function reassignTicket(ticketId, assignedToId, loggedInUser) {
   // 1. Find Ticket
   const ticket = await repository.findTicketById(ticketId);
   if (!ticket) {
@@ -161,7 +189,7 @@ async function assignTicket(ticketId, assignedToId, loggedInUser) {
   );
 
   logger.info(
-    `Ticket ${ticket.ticketNumber} assigned to ${engineer.firstName} ${engineer.lastName} by Admin ${loggedInUser.id}`,
+    `Ticket ${ticket.ticketNumber} Reassigned to ${engineer.firstName} ${engineer.lastName} by Admin ${loggedInUser.id}`,
   );
 
   return updatedTicket;
@@ -173,12 +201,12 @@ async function updateTicketStatus(ticketId, payload, loggedInUser) {
   // Find Ticket
   const ticket = await repository.findTicketById(ticketId);
   if (!ticket) {
-    throw new ApiError(404, "Ticket not found.");
+    throw new AppError(404, "Ticket not found.");
   }
 
   // Closed Ticket
   if (ticket.status === "CLOSED") {
-    throw new ApiError(400, "Closed ticket cannot be modified.");
+    throw new AppError(400, "Closed ticket cannot be modified.");
   }
 
   // Permission
@@ -186,13 +214,13 @@ async function updateTicketStatus(ticketId, payload, loggedInUser) {
     loggedInUser.role === "SUPPORT_ENGINEER" &&
     ticket.assignedToId !== loggedInUser.id
   ) {
-    throw new ApiError(403, "You are not assigned to this ticket.");
+    throw new AppError(403, "You are not assigned to this ticket.");
   }
 
   // Transition Validation
   const allowed = allowedTransitions[ticket.status];
   if (!allowed.includes(status)) {
-    throw new ApiError(
+    throw new AppError(
       400,
       `Cannot change ticket status from ${ticket.status} to ${status}.`,
     );
@@ -220,11 +248,10 @@ async function updateTicketStatus(ticketId, payload, loggedInUser) {
 
 module.exports = {
   createTicket,
-  createTicket,
   getMyTickets,
   getTicketById,
   addComment,
   uploadAttachment,
-  assignTicket,
+  reassignTicket,
   updateTicketStatus,
 };

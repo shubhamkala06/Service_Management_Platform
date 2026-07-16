@@ -40,11 +40,11 @@ router.post(
 );
 
 router.patch(
-  "/:ticketId/assign",
+  "/:ticketId/reassign",
   authenticate,
   authorize("ADMIN"),
   validateAssignTicket,
-  ticketController.assignTicket,
+  ticketController.reassignTicket,
 );
 
 router.patch(

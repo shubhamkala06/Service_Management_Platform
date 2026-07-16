@@ -75,14 +75,14 @@ async function uploadAttachment(req, res, next) {
   }
 }
 
-async function assignTicket(req, res, next) {
+async function reassignTicket(req, res, next) {
   try {
     const ticket = await ticketService.assignTicket(
       req.params.ticketId,
       req.body.assignedToId,
       req.user,
     );
-    return sendResponse(res, 200, "Ticket assigned successfully.", ticket);
+    return sendResponse(res, 200, "Ticket Reassigned successfully.", ticket);
   } catch (error) {
     next(error);
   }
@@ -112,6 +112,6 @@ module.exports = {
   getTicketById,
   addComment,
   uploadAttachment,
-  assignTicket,
+  reassignTicket,
   updateTicketStatus,
 };

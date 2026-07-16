@@ -84,6 +84,9 @@ model User {
 
   role Role @relation(fields: [roleId], references: [id])
 
+  supportTeamId Int?
+  supportTeam SupportTeam? @relation(fields: [supportTeamId], references: [id])
+
   createdTickets  Ticket[]              @relation("CreatedTickets")
   assignedTickets Ticket[]              @relation("AssignedTickets")
   ticketHistory   TicketStatusHistory[] @relation("StatusChangedBy")
@@ -102,6 +105,23 @@ model User {
   @@index([roleId])
   @@index([department])
   @@map("users")
+  @@index([supportTeamId])
+}
+
+model SupportTeam {
+
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+
+  users       User[]
+  categories  SupportCategory[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("support_teams")
 }
 
 model SupportCategory {
@@ -109,6 +129,9 @@ model SupportCategory {
   name        String  @unique
   description String?
   isActive    Boolean @default(true)
+  supportTeamId Int
+
+  supportTeam SupportTeam @relation(fields:[supportTeamId], references:[id])
 
   tickets   Ticket[]
   SlaPolicy SlaPolicy?
