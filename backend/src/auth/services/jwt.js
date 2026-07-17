@@ -1,22 +1,8 @@
-// const { jwtVerify } = require("jose");
-
-//     const {payload} = await jwtVerify(token,secret,{
-//         issuer: config.jwt.issuer,
-//         audience: config.jwt.audience
-//     });
-//     return payload;
-// }
-
-// module.exports = {
-//     verify
-// };
-
-
 const { createRemoteJWKSet, jwtVerify } = require("jose");
 
 const config = require("../../config/env");
 const { getConfiguration } = require("../client");
-const {userRepsitory} = require("../../user");
+const { getUserByOidcSubject } = require("../../user");
 
 let jwks;
 
@@ -45,8 +31,9 @@ async function validateAccessToken(token) {
             audience: config.oidc.client_id,
         }
     );
-    userInfo = await userRepsitory.findByOidcSubject(payload.sub);
-    
+
+    userInfo = await getUserByOidcSubject(payload.sub);
+
     return userInfo;
 }
 

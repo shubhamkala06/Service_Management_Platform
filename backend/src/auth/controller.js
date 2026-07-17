@@ -1,7 +1,6 @@
-const userService = require("../user");
+const { createUser } = require("../user");
 const { buildAuthorizationRequest } = require("./services/login");
 const { exchangeAuthorizationCode } = require("./services/callback");
-const jwt = require("./services/jwt")
 
 const {
     storeLoginState,
@@ -39,17 +38,17 @@ async function callback(req, res) {
 
     const userInfo = {
         oidcSubject: identity.claims.sub,
-        email:identity.claims.email,
-        firstName:identity.claims.first_name,
-        lastName:identity.claims.last_name,
-        department:identity.claims.department,
-        dateOfJoining:new Date(identity.claims.date_of_joining),
+        email: identity.claims.email,
+        firstName: identity.claims.first_name,
+        lastName: identity.claims.last_name,
+        department: identity.claims.department,
+        dateOfJoining: new Date(identity.claims.date_of_joining),
     }
 
-    await userService.createUser(userInfo);
-    
+    await createUser(userInfo);
+
     const accessToken = identity.tokenSet.access_token;
-    
+
     res.cookie("access_token", accessToken, {
         httpOnly: true,
         secure: false,
