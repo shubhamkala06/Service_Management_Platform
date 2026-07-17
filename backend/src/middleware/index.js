@@ -1,5 +1,4 @@
 module.exports = {
-    // requireAuth : require("./authentication.middleware").requireAuth,
-    requireRoles: require("./authorization.middleware").requireRoles,
-    requireAuth : require("./cookieAuthentication.middleware").authenticate,
+    authorize: require("./authorization.middleware").requireRoles,
+    authenticate : require("./cookieAuthentication.middleware").requireAuth,
 }

@@ -8,17 +8,16 @@ const {
   errorHandler,
 } = require("./errors");
 
-const {authRoutes} = require("./auth");
-const {requireAuth, requireRoles} = require("./middleware/");
-
+const userRoutes = require("./user/routes");
+const authRoutes = require("./auth/routes");
 
 const app = express();
 
 // ---------------- Pre-route Middleware ----------------
 
 app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true
+  origin: "http://localhost:5173",
+  credentials: true
 }));
 app.use(cookieParser(config.cookie.secret));
 app.use(express.json());
@@ -32,11 +31,8 @@ app.get("/health", (req, res) => {
 });
 
 
-app.get("/me", requireAuth, (req, res) => {
-    res.json(req.user);
-});
-
-app.use("/auth",authRoutes);
+app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
 
 // ---------------- Post-route Middleware ----------------
 

@@ -1,16 +1,9 @@
-const client = require("./client");
-const login = require("./services/login");
-const callback = require("./services/callback");
-
 module.exports = {
-    initialize: client.initialize,
-    getConfiguration: client.getConfiguration,
+    initialize: require("./client").initialize,
+    getConfiguration: require("./client").getConfiguration,
 
-    beginLogin: login.buildAuthorizationRequest,
-    authenticate: callback.exchangeAuthorizationCode,
-
-    authRoutes: require("./routes"),
+    beginLogin: require("./services/login").buildAuthorizationRequest,
+    authenticate: require("./services/callback").exchangeAuthorizationCode,
 
     verifyJWT: require("./services/jwt").validateAccessToken
-    // verifyJWT: require("./services/jwt").verify
 };

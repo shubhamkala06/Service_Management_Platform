@@ -1,7 +1,7 @@
 const { verifyJWT } = require("../auth");
 const { AppError } = require("../errors");
 
-async function authenticate(req, res, next) {
+async function requireAuth(req, res, next) {
     const token = req.cookies.access_token;
 
     if (!token) {
@@ -10,7 +10,6 @@ async function authenticate(req, res, next) {
 
     try {
         const user = await verifyJWT(token);
-
         if (!user.isActive) {
             throw new AppError("User account is inactive", 403);
         }
@@ -26,4 +25,4 @@ async function authenticate(req, res, next) {
     }
 }
 
-module.exports = { authenticate };
+module.exports = { requireAuth };
