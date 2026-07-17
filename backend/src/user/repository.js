@@ -6,6 +6,8 @@ const userSelect = {
     firstName: true,
     lastName: true,
     department: true,
+    lastLoginAt:true,
+    dateOfJoining:true,
     isActive: true,
     role: true,
 };
