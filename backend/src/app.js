@@ -32,6 +32,12 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to the Service Management Platform API",
+  });
+});
+
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
