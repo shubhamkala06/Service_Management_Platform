@@ -44,6 +44,7 @@ router.post(
   ticketController.uploadAttachment,
 );
 
+//not that much use (optional)
 router.patch(
   "/:ticketId/reassign",
   authenticate,
