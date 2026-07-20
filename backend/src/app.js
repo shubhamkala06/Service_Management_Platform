@@ -3,24 +3,22 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const config = require("./config/env");
-const { notFoundHandler, errorHandler } = require("./errors");
-const path = require("path");
-// const upload = require("./middleware/upload.middleware.js");
+const {
+  notFoundHandler,
+  errorHandler,
+} = require("./errors");
 
-const { authRoutes } = require("./auth");
-const { authenticate, authorize } = require("./middleware/");
-const ticketRoutes = require("./ticket/routes");
+const userRoutes = require("./user/routes");
+const authRoutes = require("./auth/routes");
 
 const app = express();
 
 // ---------------- Pre-route Middleware ----------------
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  }),
-);
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(cookieParser(config.cookie.secret));
 app.use(express.json());
 
@@ -32,12 +30,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.get("/me", authenticate, (req, res) => {
-  res.json(req.user);
-});
 
+app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
-
 app.use("/api/tickets", ticketRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 

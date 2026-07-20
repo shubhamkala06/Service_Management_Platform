@@ -2,7 +2,7 @@ import {get} from "$lib/api/client";
 
 
 export async function getCurrentUser() {
-    const userInfo = await get("/me");
+    const userInfo = await get("/user/me");
     return userInfo;
 }
 

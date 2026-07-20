@@ -19,8 +19,8 @@ async function shutdown() {
 }
 
 module.exports = {
-  initialize,
-  shutdown,
-  prisma,
-  redis,
+  initialize : initialize,
+  shutdown : shutdown,
+  prisma : prisma,
+  redis : redis,
 };
