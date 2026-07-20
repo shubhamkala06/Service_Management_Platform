@@ -3,21 +3,20 @@ const { buildAuthorizationRequest } = require("./services/login");
 const { exchangeAuthorizationCode } = require("./services/callback");
 
 const {
-    storeLoginState,
-    readLoginState,
-    clearLoginState,
+  storeLoginState,
+  readLoginState,
+  clearLoginState,
 } = require("./loginState");
 
 const { AppError } = require("../errors");
 const config = require("../config/env");
 
 async function login(req, res) {
-    const { authorizationUrl, loginState } =
-        await buildAuthorizationRequest();
+  const { authorizationUrl, loginState } = await buildAuthorizationRequest();
 
-    storeLoginState(res, loginState);
+  storeLoginState(res, loginState);
 
-    res.redirect(authorizationUrl.href);
+  res.redirect(authorizationUrl.href);
 }
 
 async function callback(req, res) {
@@ -59,6 +58,6 @@ async function callback(req, res) {
 }
 
 module.exports = {
-    login,
-    callback,
+  login,
+  callback,
 };

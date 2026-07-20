@@ -33,6 +33,8 @@ app.get("/health", (req, res) => {
 
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
+app.use("/api/tickets", ticketRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ---------------- Post-route Middleware ----------------
 
