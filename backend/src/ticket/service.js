@@ -3,7 +3,6 @@ const { calculateDeadline } = require("../core/utils/sla.js");
 const { generateTicketNumber } = require("../core/utils/ticket-number.js");
 const { logger } = require("../logger/index.js");
 const { AppError } = require("../errors/index.js");
-const { get } = require("../app.js");
 
 const TicketStatus = {
   OPEN: "OPEN",

@@ -1,7 +1,6 @@
 const ticketService = require("./service.js");
 const sendResponse = require("../core/utils/response.js");
 const { logger } = require("../logger/index.js");
-const { get } = require("../app");
 const { AppError } = require("../errors/index.js");
 
 async function createTicket(req, res, next) {

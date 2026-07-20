@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -10,6 +11,7 @@ const {
 
 const userRoutes = require("./user/routes");
 const authRoutes = require("./auth/routes");
+const ticketRoutes = require("./ticket/routes");
 
 const app = express();
 
