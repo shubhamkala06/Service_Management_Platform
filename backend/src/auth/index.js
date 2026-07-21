@@ -5,5 +5,11 @@ module.exports = {
     beginLogin: require("./services/login").buildAuthorizationRequest,
     authenticate: require("./services/callback").exchangeAuthorizationCode,
 
-    verifyJWT: require("./services/jwt").validateAccessToken
+    validateAccessToken : require("./services/jwt").validateAccessToken,
+
+    getRefreshTokenSession : require("./services/refreshToken").getRefreshTokenSession,
+    saveRefreshTokenSession : require("./services/refreshToken").saveRefreshTokenSession,
+    deleteRefreshTokenSession : require("./services/refreshToken").deleteRefreshTokenSession,
+    
+    refreshAccessToken : require("./services/refresh").refreshAccessToken,
 };

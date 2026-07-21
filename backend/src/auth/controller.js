@@ -1,11 +1,18 @@
+const crypto = require("node:crypto");
+
 const { createUser } = require("../user");
 const { buildAuthorizationRequest } = require("./services/login");
 const { exchangeAuthorizationCode } = require("./services/callback");
+const { saveRefreshTokenSession, getRefreshTokenSession, deleteRefreshTokenSession } = require("./services/refreshToken");
 
 const {
-  storeLoginState,
-  readLoginState,
-  clearLoginState,
+    revokeRefreshToken,
+    buildLogoutUrl
+} = require("./services/logout");
+const {
+    storeLoginState,
+    readLoginState,
+    clearLoginState,
 } = require("./loginState");
 
 const { AppError } = require("../errors");
@@ -46,9 +53,20 @@ async function callback(req, res) {
 
     await createUser(userInfo);
 
-    const accessToken = identity.tokenSet.access_token;
+    const sessionId = crypto.randomUUID();
 
-    res.cookie("access_token", accessToken, {
+    await saveRefreshTokenSession(sessionId, {
+        refreshToken: identity.tokenSet.refresh_token,
+        idToken: identity.tokenSet.id_token,
+    });
+
+    res.cookie("refresh_session_id", sessionId, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+    });
+
+    res.cookie("access_token", identity.tokenSet.access_token, {
         httpOnly: true,
         secure: false,
         sameSite: "lax"
@@ -57,7 +75,48 @@ async function callback(req, res) {
     res.redirect(`${config.frontend.url}/`);
 }
 
+async function logout(req, res) {
+    const sessionId = req.cookies?.refresh_session_id;
+
+    let logoutUrl;
+
+    if (sessionId) {
+        const session = await getRefreshTokenSession(sessionId);
+
+        if (session) {
+            try {
+                await revokeRefreshToken(
+                    session.refreshToken
+                );
+            }
+            catch (err) {
+                //Currenlty doing nothing specific for this error. Just clear the cookies and remove session.
+                // if (err.error === "invalid_token") {
+                //     console.warn("Refresh token already invalid during logout.");           //will have to decide what to do here
+                // } else {
+                //     console.error("Unexpected error while revoking refresh token:", err);
+                // }
+            }
+
+            await deleteRefreshTokenSession(sessionId);
+
+            logoutUrl = buildLogoutUrl(session.idToken);
+        }
+    }
+
+    res.clearCookie("access_token");
+
+    res.clearCookie("refresh_session_id");
+
+    if (logoutUrl) {
+        return res.redirect(logoutUrl.toString());
+    }
+
+    return res.sendStatus(204);
+}
+
 module.exports = {
-  login,
-  callback,
+    login,
+    callback,
+    logout
 };

@@ -14,4 +14,9 @@ router.get(
     controller.callback
 );
 
+router.get(
+    "/logout",
+    controller.logout
+);
+
 module.exports = router;
