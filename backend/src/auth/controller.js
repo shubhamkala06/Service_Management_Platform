@@ -1,6 +1,9 @@
+const crypto = require("node:crypto");
+
 const { createUser } = require("../user");
 const { buildAuthorizationRequest } = require("./services/login");
 const { exchangeAuthorizationCode } = require("./services/callback");
+const { saveRefreshTokenSession } = require("./services/refreshToken");
 
 const {
     storeLoginState,
@@ -47,9 +50,19 @@ async function callback(req, res) {
 
     await createUser(userInfo);
 
-    const accessToken = identity.tokenSet.access_token;
+    const sessionId = crypto.randomUUID();
 
-    res.cookie("access_token", accessToken, {
+    await saveRefreshTokenSession(sessionId, {
+        refreshToken: identity.tokenSet.refresh_token,
+    });
+
+    res.cookie("refresh_session_id", sessionId, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+    });
+
+    res.cookie("access_token", identity.tokenSet.access_token, {
         httpOnly: true,
         secure: false,
         sameSite: "lax"

@@ -18,7 +18,8 @@ const envSchema = z.object({
   JWT_ISSUER : z.string().trim().min(1),
   JWT_AUDIENCE : z.string().trim().min(1),
   JWT_EXPIRATION_SECONDS: z.coerce.number().int().min(1).max(1800),
-  FRONTEND_URL: z.url()
+  FRONTEND_URL: z.url(),
+  REFRESH_SESSION_TTL: z.coerce.number().positive()
 });
 
 const result = envSchema.safeParse(process.env);
@@ -41,7 +42,8 @@ module.exports = Object.freeze({
     url: result.data.DATABASE_URL
   },
   redis:{
-    url: result.data.REDIS_URL
+    url: result.data.REDIS_URL,
+    ttl: result.data.REFRESH_SESSION_TTL
   },
   oidc:{
     issuer: result.data.OIDC_ISSUER,
