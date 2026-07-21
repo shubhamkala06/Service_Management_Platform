@@ -44,11 +44,9 @@
 {:else}
 	<div class="flex min-h-screen items-center justify-center bg-[#F7FAF9] px-6 py-10">
 		<div class="w-full max-w-2xl rounded-2xl border border-[#DCE5E7] bg-white p-10 shadow-sm">
-
 			<!-- Profile Header -->
 
 			<div class="flex flex-col items-center">
-
 				<div
 					class="flex h-24 w-24 items-center justify-center rounded-full bg-[#2ED47A] text-4xl font-bold text-[#003B49]"
 				>
@@ -56,7 +54,8 @@
 				</div>
 
 				<h1 class="mt-5 text-3xl font-bold text-[#003B49]">
-					{user.firstName} {user.lastName}
+					{user.firstName}
+					{user.lastName}
 				</h1>
 
 				<p class="mt-1 capitalize text-[#64727A]">
@@ -66,19 +65,15 @@
 				<p class="mt-2 text-sm text-[#64727A]">
 					{user.email}
 				</p>
-
 			</div>
 
 			<!-- Divider -->
 
 			<div class="my-8 border-t border-[#DCE5E7]"></div>
 
-			<h2 class="mb-6 text-xl font-semibold text-[#003B49]">
-				Account Information
-			</h2>
+			<h2 class="mb-6 text-xl font-semibold text-[#003B49]">Account Information</h2>
 
 			<div class="space-y-5">
-
 				<div class="flex justify-between border-b border-[#EEF2F3] pb-3">
 					<span class="text-[#64727A]">First Name</span>
 					<span class="font-medium text-[#003B49]">{user.firstName}</span>
@@ -114,9 +109,7 @@
 						{formatDate(user.lastLoginAt)}
 					</span>
 				</div>
-
 			</div>
-
 		</div>
 	</div>
 {/if}
