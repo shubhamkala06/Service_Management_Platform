@@ -10,7 +10,7 @@ const userRoutes = require("./user/routes");
 const authRoutes = require("./auth/routes");
 const ticketRoutes = require("./ticket/routes");
 const approvalRoutes = require("./ticket/approval/routes");
-
+const assetRoutes = require("./asset/routes");
 const app = express();
 
 // ---------------- Pre-route Middleware ----------------
@@ -43,7 +43,7 @@ app.use("/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/approvals", approvalRoutes);
-
+app.use("/api/assets", assetRoutes);
 // ---------------- Post-route Middleware ----------------
 
 app.use(notFoundHandler);
