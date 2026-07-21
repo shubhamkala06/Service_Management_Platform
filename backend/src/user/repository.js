@@ -49,17 +49,24 @@ async function findRoleById(id) {
 }
 
 async function findRoleByName(name) {
-    return prisma.role.findUnique({
-        where: {
-            name,
-        },
-    });
+  return prisma.role.findUnique({
+    where: {
+      name,
+    },
+  });
+}
+async function getAllRoles() {
+  return await prisma.role.findMany({
+    orderBy: {
+      id: "asc",
+    },
+  });
 }
 
 async function create(userData) {
-    return prisma.user.create({
-        data: userData,
-    });
+  return prisma.user.create({
+    data: userData,
+  });
 }
 
 async function synchronizeIdentity(id, profileData) {

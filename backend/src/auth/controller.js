@@ -8,7 +8,7 @@ const { saveRefreshTokenSession, getRefreshTokenSession, deleteRefreshTokenSessi
 const {
     revokeRefreshToken,
     buildLogoutUrl
-} = require("./services/logout")
+} = require("./services/logout");
 const {
     storeLoginState,
     readLoginState,
@@ -19,12 +19,11 @@ const { AppError } = require("../errors");
 const config = require("../config/env");
 
 async function login(req, res) {
-    const { authorizationUrl, loginState } =
-        await buildAuthorizationRequest();
+  const { authorizationUrl, loginState } = await buildAuthorizationRequest();
 
-    storeLoginState(res, loginState);
+  storeLoginState(res, loginState);
 
-    res.redirect(authorizationUrl.href);
+  res.redirect(authorizationUrl.href);
 }
 
 async function callback(req, res) {
@@ -91,11 +90,12 @@ async function logout(req, res) {
                 );
             }
             catch (err) {
-                if (err.error === "invalid_token") {
-                    console.warn("Refresh token already invalid during logout.");           //will have to decide what to do here
-                } else {
-                    console.error("Unexpected error while revoking refresh token:", err);
-                }
+                //Currenlty doing nothing specific for this error. Just clear the cookies and remove session.
+                // if (err.error === "invalid_token") {
+                //     console.warn("Refresh token already invalid during logout.");           //will have to decide what to do here
+                // } else {
+                //     console.error("Unexpected error while revoking refresh token:", err);
+                // }
             }
 
             await deleteRefreshTokenSession(sessionId);
