@@ -54,6 +54,7 @@ async function callback(req, res) {
 
     await saveRefreshTokenSession(sessionId, {
         refreshToken: identity.tokenSet.refresh_token,
+        idToken: identity.tokenSet.id_token,
     });
 
     res.cookie("refresh_session_id", sessionId, {

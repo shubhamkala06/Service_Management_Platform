@@ -63,6 +63,7 @@ async function requireAuth(req, res, next) {
                 logger.info("Refresh token rotated.");
                 await saveRefreshTokenSession(sessionId, {
                     refreshToken: tokenSet.refresh_token,
+                    idToken: session.idToken,
                 });
             }
 
