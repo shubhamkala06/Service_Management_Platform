@@ -72,6 +72,10 @@ async function listUsers() {
     return repository.findAll();
 }
 
+async function listRoles() {
+    return repository.findAllRoles();
+}
+
 async function getUserById(userId) {
     const user = await repository.findById(userId);
 
@@ -143,6 +147,7 @@ module.exports = {
     getCurrentUser,
     getUserByOidcSubject,
     listUsers,
+    listRoles,
     getUserById,
     updateUserRole,
     updateUserStatus,

@@ -19,18 +19,19 @@ router.get(
 );
 
 router.get(
+    "/roles",
+    authenticate,
+    authorize("System Administrator"),
+    controller.listRoles
+);
+
+router.get(
     "/:id",
     authenticate,
     authorize("System Administrator"),
     controller.getUser
 );
 
-// router.get(
-//     "/roles",
-//     authenticate,
-//     authorize(["System Administrator"]),
-//     controller.listRoles
-// );
 
 router.patch(
     "/:id/role",

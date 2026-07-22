@@ -1,4 +1,4 @@
-const users = require("./index");
+const users = require("./service");
 
 async function getCurrentUser(req, res) {
     const user = await users.getCurrentUser(req.user.id);
@@ -10,6 +10,12 @@ async function listUsers(req, res) {
     const usersList = await users.listUsers();
 
     res.status(200).json(usersList);
+}
+
+async function listRoles(req, res) {
+    const rolesList = await users.listRoles();
+
+    res.status(200).json(rolesList);
 }
 
 async function getUser(req, res) {
@@ -39,6 +45,7 @@ async function updateUserStatus(req, res) {
 module.exports = {
     getCurrentUser,
     listUsers,
+    listRoles,
     getUser,
     updateUserRole,
     updateUserStatus,
