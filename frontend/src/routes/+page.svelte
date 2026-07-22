@@ -1,6 +1,11 @@
 <script>
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	goto(resolve('/dashboard'));
+	onMount(() => {
+		goto(resolve('/dashboard'), {
+			replaceState: true
+		});
+	});
 </script>

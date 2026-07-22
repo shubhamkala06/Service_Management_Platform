@@ -16,3 +16,18 @@ export async function apiPost(path, data, config = {}) {
 	const response = await api.post(path, data, config);
 	return response.data;
 }
+
+export async function apiPatch(path, data, config = {}) {
+	const response = await api.patch(path, data, config);
+	return response.data;
+}
+
+export async function apiPut(path, data, config = {}) {
+	const response = await api.put(path, data, config);
+	return response.data;
+}
+
+export async function apiDelete(path, config={}) {
+	const response = await api.delete(path,config);
+	return response.data;
+}
