@@ -128,7 +128,7 @@ async function updateUserStatus(userId, isActive) {
     }
 
     if (user.isActive === isActive) {
-        return;
+        return isActive;
     }
 
     await repository.updateStatus(userId, isActive);
@@ -141,6 +141,7 @@ async function updateUserStatus(userId, isActive) {
         },
         "Updated user application status."
     );
+    return isActive;
 }
 
 module.exports = {

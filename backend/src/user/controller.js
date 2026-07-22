@@ -34,12 +34,12 @@ async function updateUserRole(req, res) {
 }
 
 async function updateUserStatus(req, res) {
-    await users.updateUserStatus(
+    const status = await users.updateUserStatus(
         req.params.id,
         req.body.isActive
     );
 
-    res.sendStatus(204);
+    res.status(200).json({"isActive":status});
 }
 
 module.exports = {
