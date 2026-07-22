@@ -104,7 +104,7 @@ async function updateUserRole(userId, roleName) {
     }
 
     if (user.role.id === role.id) {
-        return;
+        return role;
     }
 
     await repository.updateRole(userId, role.id);
@@ -117,6 +117,7 @@ async function updateUserRole(userId, roleName) {
         },
         "Updated user role."
     );
+    return role;
 }
 
 async function updateUserStatus(userId, isActive) {

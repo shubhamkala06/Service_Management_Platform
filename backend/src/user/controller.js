@@ -25,12 +25,12 @@ async function getUser(req, res) {
 }
 
 async function updateUserRole(req, res) {
-    await users.updateUserRole(
+    const role = await users.updateUserRole(
         req.params.id,
         req.body.roleName
     );
 
-    res.sendStatus(204);
+    res.status(200).json(role);
 }
 
 async function updateUserStatus(req, res) {
