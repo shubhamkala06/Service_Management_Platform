@@ -4,10 +4,10 @@ import manager from './manager';
 import supportEngineer from './supportEngineer';
 
 const navigation = {
-	SYSTEM_ADMINISTRATOR: admin,
-	EMPLOYEE: employee,
-	MANAGER: manager,
-	SUPPORT_ENGINEER: supportEngineer
+	'System Administrator': admin,
+	Employee: employee,
+	Manager: manager,
+	'Support Engineer': supportEngineer
 };
 
 export function getNavigation(role) {

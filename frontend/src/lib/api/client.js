@@ -27,7 +27,7 @@ export async function apiPut(path, data, config = {}) {
 	return response.data;
 }
 
-export async function apiDelete(path, config={}) {
-	const response = await api.delete(path,config);
+export async function apiDelete(path, config = {}) {
+	const response = await api.delete(path, config);
 	return response.data;
 }

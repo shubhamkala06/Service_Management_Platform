@@ -15,8 +15,7 @@
 			const user = await getCurrentUser();
 
 			auth.setUser(user);
-		}
-		catch (err) {
+		} catch (err) {
 			auth.clearUser();
 
 			goto('/login', {
@@ -27,31 +26,19 @@
 </script>
 
 {#if auth.isLoading}
-
 	<div class="flex h-screen items-center justify-center bg-slate-50">
-
-		<p class="text-sm text-slate-500">
-			Loading...
-		</p>
-
+		<p class="text-sm text-slate-500">Loading...</p>
 	</div>
-
 {:else}
-
 	<div class="flex h-screen bg-slate-50">
-
 		<Sidebar role={auth.user?.role?.name} />
 
 		<div class="flex min-w-0 flex-1 flex-col">
-
 			<Header />
 
 			<main class="flex-1 overflow-y-auto p-8">
 				{@render children()}
 			</main>
-
 		</div>
-
 	</div>
-
 {/if}
