@@ -1,8 +1,12 @@
 <script>
-	import { Bell } from 'lucide-svelte';
+	import { Bell, LogOut } from 'lucide-svelte';
 
 	import { auth } from '$lib/stores/auth.svelte';
 	import { page } from '$lib/stores/page.svelte';
+
+	function logout() {
+		window.location.href = `${import.meta.env.VITE_API_URL}/auth/logout`;
+	}
 
 	const initials = $derived.by(() => {
 		if (!auth.user) {
@@ -53,5 +57,14 @@
 				</p>
 			</div>
 		</div>
+
+		<button
+			type="button"
+			onclick={logout}
+			class="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+		>
+			<LogOut size={16} />
+			<span>Logout</span>
+		</button>
 	</div>
 </header>

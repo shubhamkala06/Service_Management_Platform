@@ -9,11 +9,13 @@
 	import UserRoleBadge from './UserRoleBadge.svelte';
 	import UserStatusBadge from './UserStatusBadge.svelte';
 	import EditRoleDialog from './EditRoleDialog.svelte';
+	import ChangeUserStatusDialog from './ChangeUserStatusDialog.svelte';
 
 	let {
 		user,
 		roles,
-		onRoleUpdated = () => {}
+		onRoleUpdated = () => {},
+		onStatusUpdated = () => {}
 	} = $props();
 
 	const formatter = new Intl.DateTimeFormat('en-IN', {
@@ -27,12 +29,20 @@
 		<div class="flex items-center justify-between">
 			<CardTitle>Account Information</CardTitle>
 
-			<EditRoleDialog
-				userId={user.id}
-				currentRole={user.role}
-				{roles}
-				onUpdated={onRoleUpdated}
-			/>
+			<div class="flex items-center gap-2">
+				<EditRoleDialog
+					userId={user.id}
+					currentRole={user.role}
+					{roles}
+					onUpdated={onRoleUpdated}
+				/>
+
+				<ChangeUserStatusDialog
+					userId={user.id}
+					isActive={user.isActive}
+					onUpdated={onStatusUpdated}
+				/>
+			</div>
 		</div>
 	</CardHeader>
 

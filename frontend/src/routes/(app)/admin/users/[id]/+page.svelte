@@ -65,6 +65,10 @@
 		user.role = updatedRole;
 	}
 
+	function handleStatusUpdated(updatedStatus) {
+		user.isActive = updatedStatus.isActive;
+	}
+
 	onMount(loadPage);
 </script>
 
@@ -115,6 +119,7 @@
 				{user}
 				{roles}
 				onRoleUpdated={handleRoleUpdated}
+				onStatusUpdated={handleStatusUpdated}
 			/>
 		</div>
 	{/if}
