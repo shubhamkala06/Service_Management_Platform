@@ -15,8 +15,6 @@
 </script>
 
 <Table.Root>
-	<Table.Caption>Platform users</Table.Caption>
-
 	<Table.Header>
 		<Table.Row>
 			<Table.Head>Name</Table.Head>

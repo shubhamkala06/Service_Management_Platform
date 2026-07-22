@@ -12,9 +12,9 @@ export async function getUser(id) {
 	return await apiGet(`/user/${id}`);
 }
 
-export async function updateUserRole(id, roleId) {
+export async function updateUserRole(id, roleName) {
 	return await apiPatch(`/user/${id}/role`, {
-		roleId
+		roleName
 	});
 }
 
