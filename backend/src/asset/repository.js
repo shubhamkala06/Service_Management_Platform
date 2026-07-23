@@ -188,8 +188,41 @@ class AssetRepository {
     });
   }
 
+  async assignAsset(assetId, userId, assignedById, remarks) {
+    return prisma.$transaction(async (tx) => {
+      const assignment = await tx.assetAssignment.create({
+        data: {
+          assetId,
+          userId,
+          assignedById,
+          remarks,
+        },
+        include: {
+          asset: true,
+          user: true,
+          assignedBy: true,
+        },
+      });
+
+      await tx.asset.update({
+        where: {
+          id: assetId,
+        },
+        data: {
+          assetStatus: "ASSIGNED",
+        },
+      });
+
+      return assignment;
+    });
+  }
+
+  /**
+   * Return Assigned Asset
+   */
   async returnAsset(assignmentId, remarks) {
     return prisma.$transaction(async (tx) => {
+      // Close current assignment
       const assignment = await tx.assetAssignment.update({
         where: {
           id: assignmentId,
@@ -198,11 +231,36 @@ class AssetRepository {
           returnDate: new Date(),
           remarks,
         },
+        include: {
+          asset: {
+            select: {
+              id: true,
+              assetTag: true,
+              assetType: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          assignedBy: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       });
 
+      // Make asset available again
       await tx.asset.update({
         where: {
-          id: assignment.assetId,
+          id: assignment.asset.id,
         },
         data: {
           assetStatus: "AVAILABLE",
@@ -225,6 +283,66 @@ class AssetRepository {
       orderBy: {
         assignedDate: "desc",
       },
+    });
+  }
+
+  /**
+   * Transfer Asset
+   */
+  async transferAsset(
+    assetId,
+    currentAssignmentId,
+    newUserId,
+    assignedById,
+    remarks,
+  ) {
+    return prisma.$transaction(async (tx) => {
+      // Close previous assignment
+      await tx.assetAssignment.update({
+        where: {
+          id: currentAssignmentId,
+        },
+        data: {
+          returnDate: new Date(),
+          remarks,
+        },
+      });
+
+      // Create new assignment
+      const assignment = await tx.assetAssignment.create({
+        data: {
+          assetId,
+          userId: newUserId,
+          assignedById,
+          remarks,
+        },
+        include: {
+          asset: {
+            select: {
+              id: true,
+              assetTag: true,
+              assetType: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          assignedBy: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      return assignment;
     });
   }
 }

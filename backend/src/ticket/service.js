@@ -23,7 +23,7 @@ const allowedTransitions = {
 };
 
 async function createTicket(payload, userId) {
-  const { title, description, priority, categoryId } = payload;
+  const { title, description, purpose, priority, categoryId } = payload;
 
   const category = await repository.findCategoryById(categoryId);
   if (!category) {
@@ -46,6 +46,7 @@ async function createTicket(payload, userId) {
     ticketNumber,
     title,
     description,
+    purpose,
     priority,
     status,
     deadline,

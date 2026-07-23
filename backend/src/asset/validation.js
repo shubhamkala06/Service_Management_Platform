@@ -137,9 +137,21 @@ const getAssetsQuerySchema = z.object({
   assetStatus: z.nativeEnum(AssetStatus).optional(),
 });
 
+const assignAssetSchema = z.object({
+  userId: z.coerce.number().int().positive(),
+
+  remarks: z.string().optional().nullable(),
+});
+
+const returnAssetSchema = z.object({
+  remarks: z.string().optional().nullable(),
+});
+
 module.exports = {
   createAssetSchema,
   updateAssetSchema,
   assetIdParamSchema,
   getAssetsQuerySchema,
+  assignAssetSchema,
+  returnAssetSchema,
 };

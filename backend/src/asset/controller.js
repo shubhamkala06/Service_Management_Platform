@@ -125,6 +125,61 @@ const getAssignmentHistory = async (req, res, next) => {
   }
 };
 
+const assignAsset = async (req, res, next) => {
+  try {
+    const assignment = await assetService.assignAsset(
+      Number(req.params.id),
+      req.body,
+      req.user.id,
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Asset assigned successfully",
+      data: assignment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const returnAsset = async (req, res, next) => {
+  try {
+    const assignment = await assetService.returnAsset(
+      Number(req.params.id),
+      req.body,
+    );
+
+    return res.status(200).json({
+      success: true,
+
+      message: "Asset returned successfully",
+
+      data: assignment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const transferAsset = async (req, res, next) => {
+  try {
+    const assignment = await assetService.transferAsset(
+      Number(req.params.id),
+      req.body,
+      req.user.id,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Asset transferred successfully",
+      data: assignment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createAsset,
   getAssets,
@@ -133,4 +188,7 @@ module.exports = {
   deleteAsset,
   getCurrentAssignment,
   getAssignmentHistory,
+  assignAsset,
+  returnAsset,
+  transferAsset,
 };

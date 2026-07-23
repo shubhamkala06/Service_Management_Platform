@@ -205,6 +205,78 @@ class AssetService {
 
     return assetRepository.getCurrentAssignment(assetId);
   }
+
+  async assignAsset(assetId, payload, assignedById) {
+    const asset = await assetRepository.findById(assetId);
+
+    if (!asset || !asset.isActive) {
+      throw new AppError("Asset not found", 404);
+    }
+
+    if (asset.assetStatus !== "AVAILABLE") {
+      throw new AppError("Asset is not available for assignment", 400);
+    }
+
+    const currentAssignment =
+      await assetRepository.getCurrentAssignment(assetId);
+
+    if (currentAssignment) {
+      throw new AppError("Asset is already assigned", 400);
+    }
+
+    return assetRepository.assignAsset(
+      assetId,
+      payload.userId,
+      assignedById,
+      payload.remarks,
+    );
+  }
+
+  async returnAsset(assetId, payload) {
+    const asset = await assetRepository.findById(assetId);
+
+    if (!asset || !asset.isActive) {
+      throw new AppError("Asset not found", 404);
+    }
+
+    if (asset.assetStatus !== "ASSIGNED") {
+      throw new AppError("Asset is not assigned", 400);
+    }
+
+    const assignment = await assetRepository.getCurrentAssignment(assetId);
+
+    if (!assignment) {
+      throw new AppError("No active assignment found", 404);
+    }
+
+    return assetRepository.returnAsset(assignment.id, payload.remarks);
+  }
+
+  async transferAsset(assetId, payload, assignedById) {
+    const asset = await assetRepository.findById(assetId);
+    if (!asset || !asset.isActive) {
+      throw new AppError("Asset not found", 404);
+    }
+    if (asset.assetStatus !== "ASSIGNED") {
+      throw new AppError("Asset is not assigned", 400);
+    }
+    const currentAssignment =
+      await assetRepository.getCurrentAssignment(assetId);
+    if (!currentAssignment) {
+      throw new AppError("No active assignment found", 404);
+    }
+    if (currentAssignment.userId === payload.userId) {
+      throw new AppError("Asset is already assigned to this user", 400);
+    }
+
+    return assetRepository.transferAsset(
+      assetId,
+      currentAssignment.id,
+      payload.userId,
+      assignedById,
+      payload.remarks,
+    );
+  }
 }
 
 module.exports = new AssetService();

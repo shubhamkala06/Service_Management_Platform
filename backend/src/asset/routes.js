@@ -85,4 +85,31 @@ router.get(
   assetController.getAssignmentHistory,
 );
 
+router.post(
+  "/:id/assign",
+  authenticate,
+  authorize(["ADMIN", "SUPPORT_ENGINEER"]),
+  validate(assetIdParamSchema, "params"),
+  validate(assignAssetSchema),
+  assetController.assignAsset,
+);
+
+router.post(
+  "/:id/return",
+  authenticate,
+  authorize(["ADMIN", "SUPPORT_ENGINEER"]),
+  validate(assetIdParamSchema, "params"),
+  validate(returnAssetSchema),
+  assetController.returnAsset,
+);
+
+router.post(
+  "/:id/transfer",
+  authenticate,
+  authorize(["ADMIN", "SUPPORT_ENGINEER"]),
+  validate(assetIdParamSchema, "params"),
+  validate(assignAssetSchema),
+  assetController.transferAsset,
+);
+
 module.exports = router;
