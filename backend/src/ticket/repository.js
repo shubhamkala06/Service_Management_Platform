@@ -1,4 +1,4 @@
-const prisma = require("../database/index.js");
+const prisma = require("../database/prisma.js");
 
 async function findUserById(userId) {
   return prisma.user.findUnique({
@@ -18,7 +18,7 @@ async function findCategoryById(categoryId) {
       id: Number(categoryId),
     },
     include: {
-      slaPolicy: true,
+      SlaPolicy: true,
       supportTeam: true,
     },
   });
@@ -148,7 +148,6 @@ async function getTicketById(ticketId) {
       createdBy: {
         select: {
           id: true,
-          employeeCode: true,
           firstName: true,
           lastName: true,
           email: true,
@@ -159,7 +158,6 @@ async function getTicketById(ticketId) {
       assignedTo: {
         select: {
           id: true,
-          employeeCode: true,
           firstName: true,
           lastName: true,
           email: true,
@@ -219,6 +217,19 @@ async function findTicketById(ticketId) {
   return prisma.ticket.findUnique({
     where: {
       id: Number(ticketId),
+    },
+    include: {
+      category: {
+        include: {
+          supportTeam: true,
+        },
+      },
+      assignedTo: true,
+      createdBy: true,
+      slaPolicy: true,
+      comments: true,
+      approval: true,
+      statusHistory: true,
     },
   });
 }

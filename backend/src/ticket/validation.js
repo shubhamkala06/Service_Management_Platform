@@ -4,9 +4,22 @@ const TicketPriority = {
   HIGH: "HIGH",
   CRITICAL: "CRITICAL",
 };
+const TicketPurpose = {
+  SUPPORT: "SUPPORT",
+  REQUEST: "REQUEST",
+};
+const TicketStatus = {
+  OPEN: "OPEN",
+  ASSIGNED: "ASSIGNED",
+  IN_PROGRESS: "IN_PROGRESS",
+  PENDING_USER_RESPONSE: "PENDING_USER_RESPONSE",
+  RESOLVED: "RESOLVED",
+  CLOSED: "CLOSED",
+};
 
 function validateCreateTicket(req, res, next) {
-  const { title, description, priority, categoryId } = req.body;
+  const { title, description, purpose, priority, status, categoryId } =
+    req.body;
 
   if (!title || title.trim() === "") {
     return res.status(400).json({
@@ -37,10 +50,35 @@ function validateCreateTicket(req, res, next) {
       message: "Valid categoryId is required.",
     });
   }
+  if (!purpose) {
+    return res.status(400).json({
+      message: "Purpose is required.",
+    });
+  }
+  if (!Object.values(TicketPurpose).includes(purpose)) {
+    return res.status(400).json({
+      message: "Invalid purpose.",
+    });
+  }
+  // if (!Object.values(TicketStatus).includes(status)) {
+  //   return res.status(400).json({
+  //     message: "Invalid status.",
+  //   });
+  // }
 
   next();
 }
+function validateTicketId(req, res, next) {
+  const ticketId = Number(req.params.ticketId);
 
+  if (Number.isNaN(ticketId)) {
+    return res.status(400).json({
+      message: "Invalid ticket id.",
+    });
+  }
+
+  next();
+}
 function validateAddComment(req, res, next) {
   const { content } = req.body;
   if (!content || content.trim() === "") {
@@ -81,6 +119,7 @@ function validateUpdateStatus(req, res, next) {
 
 module.exports = {
   validateCreateTicket,
+  validateTicketId,
   validateAddComment,
   validateAssignTicket,
   validateUpdateStatus,

@@ -5,6 +5,7 @@ const {
   validateAddComment,
   validateAssignTicket,
   validateUpdateStatus,
+  validateTicketId,
 } = require("./validation.js");
 const { authenticate, authorize } = require("../middleware/index.js");
 const router = express.Router();
@@ -17,7 +18,7 @@ const upload = require("../middleware/upload.middleware.js");
 router.post(
   "/",
   authenticate,
-  authorize("EMPLOYEE"),
+  authorize("Employee"),
   validateCreateTicket,
   ticketController.createTicket,
 );
@@ -25,10 +26,15 @@ router.post(
 router.get(
   "/my",
   authenticate,
-  authorize("EMPLOYEE"),
+  authorize("Employee"),
   ticketController.getMyTickets,
 );
-router.get("/:ticketId", authenticate, ticketController.getTicketById);
+router.get(
+  "/:ticketId",
+  authenticate,
+  validateTicketId,
+  ticketController.getTicketById,
+);
 
 router.post(
   "/:ticketId/comments",

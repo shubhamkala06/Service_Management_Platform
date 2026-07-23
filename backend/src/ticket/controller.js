@@ -16,7 +16,7 @@ async function createTicket(req, res, next) {
 
 async function getMyTickets(req, res, next) {
   try {
-    const tickets = await ticketService.getMyTickets(req.user.id, req.query);
+    const result = await ticketService.getMyTickets(req.user.id, req.query);
     return sendResponse(res, 200, "Tickets fetched successfully.", {
       total: result.total,
       page: Number(req.query.page || 1),
@@ -34,6 +34,7 @@ async function getTicketById(req, res, next) {
       req.params.ticketId,
       req.user,
     );
+    // console.log(req.user);
     return sendResponse(res, 200, "Ticket fetched successfully.", ticket);
   } catch (error) {
     next(error);

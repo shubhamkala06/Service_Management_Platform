@@ -27,10 +27,10 @@ async function createTicket(payload, userId) {
 
   const category = await repository.findCategoryById(categoryId);
   if (!category) {
-    throw new AppError(404, "Support category not found.");
+    throw new AppError("Support category not found.", 404);
   }
 
-  const slaPolicy = category.slaPolicy;
+  const SlaPolicy = category.SlaPolicy;
 
   const engineer = await repository.findLeastLoadedEngineer(
     category.supportTeamId,
@@ -39,7 +39,7 @@ async function createTicket(payload, userId) {
   const lastTicket = await repository.getLastTicket();
   const ticketNumber = generateTicketNumber(lastTicket?.id || 0);
 
-  const deadline = calculateDeadline(slaPolicy?.resolutionTarget);
+  const deadline = calculateDeadline(SlaPolicy?.resolutionTarget);
   const status = engineer ? TicketStatus.ASSIGNED : TicketStatus.OPEN;
 
   const ticketData = {
@@ -53,7 +53,7 @@ async function createTicket(payload, userId) {
     createdById: userId,
     assignedToId: engineer?.id ?? null,
     categoryId,
-    slaPolicyId: slaPolicy?.id ?? null,
+    slaPolicyId: SlaPolicy?.id ?? null,
   };
 
   const historyData = {
@@ -91,28 +91,48 @@ async function getMyTickets(userId, filters) {
 }
 
 async function getTicketById(ticketId, loggedInUser) {
-  const ticket = await repository.getTicketById(ticketId);
+  const ticket = await repository.findTicketById(ticketId);
+
   if (!ticket) {
-    throw new AppError(404, "Ticket not found.");
+    throw new AppError("Ticket not found.", 404);
   }
 
-  if (
-    loggedInUser.role === "EMPLOYEE" &&
-    ticket.createdById !== loggedInUser.id
-  ) {
-    throw new AppError(403, "You are not authorized to access this ticket.");
-  }
+  const role = loggedInUser.role.name;
 
-  return ticket;
+  switch (role) {
+    case "System Administrator":
+      return ticket;
+
+    case "Employee":
+      if (ticket.createdById !== loggedInUser.id) {
+        throw new AppError("You are not authorized to view this ticket.", 403);
+      }
+      return ticket;
+
+    case "Support Engineer":
+      if (ticket.assignedToId !== loggedInUser.id) {
+        throw new AppError("You can only view tickets assigned to you.", 403);
+      }
+      return ticket;
+
+    case "Manager":
+      if (ticket.category.supportTeam.name !== loggedInUser.department) {
+        throw new AppError("You are not authorized to view this ticket.", 403);
+      }
+      return ticket;
+
+    default:
+      throw new AppError("Unauthorized.", 403);
+  }
 }
 
 async function addComment(ticketId, content, loggedInUser) {
   const ticket = await repository.findTicketById(ticketId);
   if (!ticket) {
-    throw new AppError(404, "Ticket not found.");
+    throw new AppError("Ticket not found.", 404);
   }
   if (ticket.status === "CLOSED") {
-    throw new AppError(400, "Cannot comment on a closed ticket.");
+    throw new AppError("Cannot comment on a closed ticket.", 400);
   }
 
   if (
@@ -155,31 +175,31 @@ async function reassignTicket(ticketId, assignedToId, loggedInUser) {
   // 1. Find Ticket
   const ticket = await repository.findTicketById(ticketId);
   if (!ticket) {
-    throw new AppError(404, "Ticket not found.");
+    throw new AppError("Ticket not found.", 404);
   }
   // 2. Closed Ticket Check
   if (ticket.status === "CLOSED") {
-    throw new AppError(400, "Closed ticket cannot be assigned.");
+    throw new AppError("Closed ticket cannot be assigned.", 400);
   }
   // 3. Find Engineer
   const engineer = await repository.findUserById(assignedToId);
   if (!engineer) {
-    throw new AppError(404, "Support engineer not found.");
+    throw new AppError("Support engineer not found.", 404);
   }
   // 4. Active Check
   if (!engineer.isActive) {
-    throw new AppError(400, "Support engineer is inactive.");
+    throw new AppError("Support engineer is inactive.", 400);
   }
   // 5. Role Check
   if (engineer.role.name !== "SUPPORT_ENGINEER") {
     throw new AppError(
-      400,
       "Ticket can only be assigned to a Support Engineer.",
+      400,
     );
   }
   // 6. Already Assigned?
   if (ticket.assignedToId === engineer.id) {
-    throw new AppError(400, "Ticket is already assigned to this engineer.");
+    throw new AppError("Ticket is already assigned to this engineer.", 400);
   }
   // 7. Assign Ticket
   const updatedTicket = await repository.assignTicketWithHistory(
@@ -201,12 +221,12 @@ async function updateTicketStatus(ticketId, payload, loggedInUser) {
   // Find Ticket
   const ticket = await repository.findTicketById(ticketId);
   if (!ticket) {
-    throw new AppError(404, "Ticket not found.");
+    throw new AppError("Ticket not found.", 404);
   }
 
   // Closed Ticket
   if (ticket.status === "CLOSED") {
-    throw new AppError(400, "Closed ticket cannot be modified.");
+    throw new AppError("Closed ticket cannot be modified.", 400);
   }
 
   // Permission
@@ -214,15 +234,15 @@ async function updateTicketStatus(ticketId, payload, loggedInUser) {
     loggedInUser.role === "SUPPORT_ENGINEER" &&
     ticket.assignedToId !== loggedInUser.id
   ) {
-    throw new AppError(403, "You are not assigned to this ticket.");
+    throw new AppError("You are not assigned to this ticket.", 403);
   }
 
   // Transition Validation
   const allowed = allowedTransitions[ticket.status];
   if (!allowed.includes(status)) {
     throw new AppError(
-      400,
       `Cannot change ticket status from ${ticket.status} to ${status}.`,
+      400,
     );
   }
 

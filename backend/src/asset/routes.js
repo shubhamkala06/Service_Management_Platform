@@ -12,6 +12,8 @@ const {
   updateAssetSchema,
   assetIdParamSchema,
   getAssetsQuerySchema,
+  assignAssetSchema,
+  returnAssetSchema,
 } = require("./validation.js");
 
 const router = express.Router();
